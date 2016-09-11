@@ -1,0 +1,1628 @@
+MPASM 5.68                           MAT.ASM   9-3-2016  21:05:04         PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00001 ; MAT
+                      00002 ; Machine À Thé.
+                      00003 ; Description:  Machine avec minuterie pour le trempage d'un sachet de thé.
+                      00004 ;   1 bouton pour réglé la durée en multiple de 15 secondes
+                      00005 ;   1 bouton pour le démarrage de la séquence
+                      00006 ;   1 servo moteur relié à un levier auquel est attaché le sachet. Le sachet est
+                      00007 ;   descendu dans la tasse au début de la séquence et remonter à la fin.
+                      00008 ;   1 affichage barre de DEL pour indiqué le temps.
+                      00009 ;   1 haut-parleur pour l'arlame indiquant la fin de la séquence.
+                      00010 ;
+                      00011  
+                      00012     include p16f1703.inc
+                      00001         LIST
+                      00002 
+                      00003 ;==========================================================================
+                      00004 ; Build date : May 15 2016
+                      00005 ;  MPASM PIC16F1703 processor include
+                      00006 ; 
+                      00007 ;  (c) Copyright 1999-2016 Microchip Technology, All rights reserved
+                      00008 ;==========================================================================
+                      00009 
+                      01152         LIST
+                      00013 
+                      00014 ;;;;;;;;;;;;;;
+                      00015 ; config  bits
+                      00016 ;;;;;;;;;;;;;;
+8007   39E4           00017     __config  _CONFIG1, _FOSC_INTOSC & _WDTE_OFF & _PWRTE_OFF & _MCLRE_ON & _CP_OFF & _BOREN_OFF & _CLKO
+                            UTEN_OFF
+8008   1E7F           00018     __config  _CONFIG2, _WRT_OFF & _PPS1WAY_ON & _ZCDDIS_OFF & _PLLEN_OFF & _STVREN_ON & _LPBOR_OFF & _L
+                            VP_OFF  
+                      00019     
+                      00020 #define TONE_PIN RA1 ; sortie alarme    
+                      00021 #define SERVO_PIN RA2 ; sortie contrôle servo moteur  
+                      00022 #define TONE_LAT LATA
+                      00023 #define SERVO_LAT LATA    
+                      00024 #define TONE_TRIS TRISA
+                      00025 #define SERVO_TRIS TRISA
+                      00026 #define SERVO_WPU WPUA    
+                      00027 #define TONE_WPU WPUA    
+                      00028 #define TONE_PIN_PPS RA1PPS
+                      00029 #define TONE_OUT_FN  H'C' ; PWM1
+                      00030 #define TONE_CCPRL  CCPR1L
+                      00031 #define TONE_CCPCON  CCP1CON    
+                      00032 #define SERVO_PIN_PPS RA2PPS
+                      00033 #define SERVO_OUT_FN H'D'   ; PWM2
+                      00034 #define SERVO_CCPRL CCPR2L
+                      00035 #define SERVO_CCPCON CCP2CON    
+                      00036 #define START_PIN   RA5 ; bouton start sur RA5
+                      00037 #define TIMESET_PIN RA4 ; bouton time set sur RA4
+                      00038 #define TIMESET_IOCN IOCAN ;registre détection transition négative
+                      00039 #define TIMESET_IOCF IOCAF ;registre indication interruption
+                      00040 #define BTN_TRIS TRISA  
+                      00041 #define BTN_WPU  WPUA    
+MPASM 5.68                           MAT.ASM   9-3-2016  21:05:04         PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00042 #define DISPLAY PORTC ; port barre de LED
+                      00043 #define DISP_TRIS TRISC
+                      00044 #define DISP_LAT  LATC
+                      00045 #define DISP_WPU  WPUC
+                      00046     
+                      00047 ; broches des anodes LED    
+                      00048 #define A1      RC5
+                      00049 #define A2      RC0
+                      00050 #define A3      RC0    
+                      00051 #define A4      RC0
+                      00052 #define A5      RC1
+                      00053 #define A6      RC1    
+                      00054 #define A7      RC1
+                      00055 #define A8      RC2
+                      00056 #define A9      RC2    
+                      00057 #define A10     RC2    
+                      00058 ; broches des cathodes LED    
+                      00059 #define C1      RC0
+                      00060 #define C2      RC5
+                      00061 #define C3      RC4
+                      00062 #define C4      RC3
+                      00063 #define C5      RC5
+                      00064 #define C6      RC4
+                      00065 #define C7      RC3
+                      00066 #define C8      RC5
+                      00067 #define C9      RC4
+                      00068 #define C10     RC3
+                      00069 ;indicateurs booléens 
+                      00070 #define F_SEC    0 ; minuterie seconde 1=active, 0=inactive
+                      00071 #define F_MSEC4  1 ; minuterie msec4 1=active, 0=inactive    
+                      00072     
+                      00073 #define DEBUG  
+                      00074     
+                      00075 ;;;;;;;;;;;;;;    
+                      00076 ; constantes
+                      00077 ;;;;;;;;;;;;;;
+  000E                00078     constant F8MHZ=0xE ; valeur de OSCCON:IRCF pour 8Mhz
+  000C                00079     constant F2MHZ=0xC ; valeur de OSSCCON:IRCF pour 2Mhz
+  0EA6                00080     constant TIME_INCR = .15000/.4 ; incrément de 15 secondes
+  927C                00081     constant TIME_MAX = TIME_INCR*.10 ; 150 secondes
+  0006                00082     constant TMR0_DLY=.256-.250      ; compte pour TMR0
+  8300                00083     constant TMR1_DLY=.65536-.32000  ; compte pour TMR1H:TMR1L
+  009B                00084     constant SERVO_PERIOD=.155       ; compte pour PR2
+  0022                00085     constant SERVO_POS_BAS=.34     ; compte pour CCP2RL:CCP2CON:DC2B
+  002F                00086     constant SERVO_NEUTRAL_PULSE=.47 ; "
+  003B                00087     constant SERVO_POS_HAUT=.59     ; "
+  001A                00088     constant SERVO_PULSE_SPAN=.26    ; "
+                      00089     
+                      00090 ;;;;;;;;;;;;;;    
+                      00091 ; macros    
+                      00092 ;;;;;;;;;;;;;;
+                      00093 ; macros pour la gestion de la pile des arguments
+                      00094 pushw macro ; empile WREG  ( -- n )
+MPASM 5.68                           MAT.ASM   9-3-2016  21:05:04         PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00095     movwi ++FSR1
+                      00096     endm
+                      00097     
+                      00098 popw macro ; dépile dans WREG ( n -- )
+                      00099     moviw FSR1--
+                      00100     endm
+                      00101 
+                      00102 over macro ; copie 2ième élément de la pile  ( n2 n1 - n2 n1 n2)
+                      00103     moviw (-1)&0x3f[FSR1]
+                      00104     pushw
+                      00105     endm
+                      00106  
+                      00107 dup macro ; copie TOS   ( n -- n n )
+                      00108     moviw 0[FSR1]
+                      00109     movwi ++FSR1
+                      00110     endm
+                      00111     
+                      00112     
+                      00113 ; toutes les pins du port DISP_PORT sont mises en mode entrée
+                      00114 ; avec weak pullup actif
+                      00115 display_disable macro
+                      00116     movlw 0x3f
+                      00117     banksel DISP_TRIS
+                      00118     movwf DISP_TRIS
+                      00119     banksel DISP_WPU
+                      00120     movwf DISP_WPU
+                      00121     endm
+                      00122 
+                      00123 ; désactivation des weak pullup pour ne pas interférer avec
+                      00124 ; le charlieplexing.
+                      00125 display_enable macro
+                      00126     banksel DISP_WPU
+                      00127     clrf DISP_WPU
+                      00128     endm
+                      00129 
+                      00130 
+                      00131 ; le canal PWM de l'alarme est désactivé.
+                      00132 ; les broches TONE_PIN et ENV_PIN misent en mode entrée avec
+                      00133 ; weak pullup
+                      00134 alarm_disable macro
+                      00135     banksel TONE_TRIS ; tous les TRISx sont dans la même banque
+                      00136     bsf TONE_TRIS, TONE_PIN
+                      00137     bsf ENV_TRIS, ENV_PIN
+                      00138     banksel TONE_WPU  ; tous les WPUx sont dans la même banque
+                      00139     bsf TONE_WPU, TONE_PIN
+                      00140     bsf ENV_WPU, ENV_PIN
+                      00141     banksel TONE_CON
+                      00142     bcf TONE_CON, TONE_OE ; désactive sortie PWM
+                      00143     endm
+                      00144     
+                      00145 ;;;;;;;;;;;;;;
+                      00146 ; variables
+                      00147 ;;;;;;;;;;;;;;
+MPASM 5.68                           MAT.ASM   9-3-2016  21:05:04         PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00148     udata
+0000                  00149 stack res 16
+                      00150  
+                      00151     udata_shr
+                      00152 ; 2 accumulateur 16 bits
+0000                  00153 ACAL res 1   ; accumulateur A octet poids faible
+0001                  00154 ACAH res 1  ; accumulateur A octet poids fort
+0002                  00155 ACBL res 1  ; accumulateur B  octet poids faible
+0003                  00156 ACBH res 1  ; accumulateur B  octet poids fort
+0004                  00157 secondes res 1 ; compte à rebours secondes, interruption TIMER1
+0005                  00158 msec4 res 1 ; compte à rebours décrément 4 msec, interruption TIMER0
+0006                  00159 pwm_period res 1 ; période pour contrôler l'intensité du segment LED 
+0007                  00160 flags res 1; indicateurs booléens.
+0008                  00161 temp res 1 ; variable temporaire 
+                      00162  
+                      00163 ;;;;;;;;;;;;;;
+                      00164 ; code
+                      00165 ;;;;;;;;;;;;;;
+                      00166     code 
+                      00167     org 0
+                      00168 ; vecteur reset    
+0000                  00169 rst:
+0000   2???           00170     goto init
+0001   0000           00171     nop
+0002   0000           00172     nop
+0003   0000           00173     nop
+                      00174 ; service des interruptions    
+                      00175     org 4
+0004                  00176 isr:
+0004   1E8B           00177     btfss INTCON, T0IE
+0005   3???           00178     bra test_tmr1
+0006   190B           00179     btfsc INTCON, T0IF
+0007   3???           00180     bra isr_timer0
+0008                  00181 test_tmr1:
+0008   1F0B           00182     btfss INTCON, PEIE
+0009   3???           00183     bra isr_exit ; interruption non traitée.
+000A   0020           00184     banksel PIR1
+000B   1C11           00185     btfss PIR1, TMR1IF
+000C   3???           00186     bra isr_exit ; interuption non traité
+000D                  00187 isr_timer1: ; répond à l'interuption sur TIMER1, intervalle 1 secondes
+000D   1011           00188     bcf PIR1, TMR1IF
+000E   0020           00189     banksel TMR1L
+000F   3000           00190     movlw low TMR1_DLY
+0010   0096           00191     movwf TMR1L
+0011   3083           00192     movlw high TMR1_DLY
+0012   0097           00193     movwf TMR1H
+0013   0B??           00194     decfsz secondes,F
+0014   3???           00195     bra isr_exit
+                      00196 ; minuterie expiré désactive interuption
+0015   1000           00197     bcf flags, F_SEC
+0016   0021           00198     banksel PIE1
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0017   1011           00199     bcf PIE1,TMR1IE
+MPASM 5.68                           MAT.ASM   9-3-2016  21:05:04         PAGE  5
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0018   130B           00200     bcf INTCON, PEIE
+0019   1E8B           00201     btfss INTCON, T0IE ; déscative toutes interruption
+001A   0020           00202     banksel T1CON
+001B   1018           00203     bcf T1CON, TMR1ON  ; arrête TIMER1
+001C   138B           00204     bcf INTCON, GIE    ; si TIMER0 n'est pas en cours d'utilisation
+001D   3???           00205     bra isr_exit
+001E                  00206 isr_timer0: ; répond à l'innterruption sur TIMER0, intervalle 4 msec.   
+001E   0020           00207     banksel TMR0
+001F   3006           00208     movlw TMR0_DLY
+0020   0095           00209     movwf TMR0
+0021   110B           00210     bcf INTCON,T0IF
+0022   0B??           00211     decfsz msec4,F
+0023   3???           00212     bra isr_exit
+0024                  00213 disable_timer:    
+0024   1080           00214     bcf flags, F_MSEC4
+0025   128B           00215     bcf INTCON,T0IE
+0026   1F0B           00216     btfss INTCON, PEIE
+0027   138B           00217     bcf INTCON, GIE   ;si TIMER1 n'est pas utilisé présentiment
+0028                  00218 isr_exit:    
+0028   0009           00219     retfie
+                      00220     
+0029                  00221 init:
+                      00222 ; fréquence clock à 8Mhz
+0029   0021           00223     banksel OSCCON
+002A   3070           00224     movlw F8MHZ<<IRCF0  ; Fosc 8Mhz
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+002B   0099           00225     movwf OSCCON
+                      00226 ; initialisation pointeur de la pile des arguments
+002C   30??           00227     movlw high stack
+002D   0087           00228     movwf FSR1H
+002E   30??           00229     movlw low stack
+002F   0086           00230     movwf FSR1L
+                      00231 ; assignation des périphériques au broches
+                      00232 ; PWM1 sur TONE_PIN   
+0030   003D           00233     banksel TONE_PIN_PPS
+0031   300C           00234     movlw TONE_OUT_FN  ; fonction PWM1 
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0032   0091           00235     movwf TONE_PIN_PPS   
+                      00236 ; PWM2 sur SERVO_PIN
+0033   003D           00237     banksel SERVO_PIN_PPS
+0034   300D           00238     movlw SERVO_OUT_FN  ; fonction PWM2
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0035   0092           00239     movwf SERVO_PIN_PPS
+                      00240 ; veroullage PPS
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0036   140F           00241     bsf PPSLOCK, 0
+                      00242 ; activation low power sleep mode
+0037   0023           00243     banksel VREGCON
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0038   1497           00244     bsf VREGCON, VREGPM
+                      00245 ; entrée analogique non utilisée
+0039   0023           00246     banksel ANSELA
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+MPASM 5.68                           MAT.ASM   9-3-2016  21:05:04         PAGE  6
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+003A   018C           00247     clrf ANSELA
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+003B   018E           00248     clrf ANSELC
+                      00249 ;    display_disable
+                      00250 ; configuration OPTION_REG TIMER0 prescale 64
+003C   0021           00251     banksel OPTION_REG
+003D   3004           00252     movlw 4 ; TIMER0 préscale 1:32
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+003E   0095           00253     movwf OPTION_REG
+                      00254 ; met SERVO_PIN en sortie bas voltage
+003F   0021           00255     banksel SERVO_TRIS
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0040   110C           00256     bcf SERVO_TRIS, SERVO_PIN
+0041   0022           00257     banksel SERVO_LAT
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0042   110C           00258     bcf SERVO_LAT, SERVO_PIN
+                      00259 ;variables à zéro
+0043   01??           00260     clrf flags 
+0044   01??           00261     clrf secondes
+0045   01??           00262     clrf msec4
+0046   2???           00263     call self_test
+                      00264 
+0047                  00265 main:
+                      00266 ; activation interruption sur bouton TIMESET enfoncé
+                      00267 ; ceci pour permettre la sortie du mode SLEEP en enfoncant ce bouton    
+0047   0027           00268     banksel TIMESET_IOCF
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0048   1213           00269     bcf TIMESET_IOCF, TIMESET_PIN ; remise à zéro indicateur interruption
+0049   0027           00270     banksel TIMESET_IOCN
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+004A   1612           00271     bsf TIMESET_IOCN, TIMESET_PIN ;déclenchement interruption sur transition négative
+004B   158B           00272     bsf INTCON, IOCIE  ; activation interruption sur transition broche.
+004C   0063           00273     sleep
+                      00274 ;désactivation IOCN
+004D   118B           00275     bcf INTCON, IOCIE
+004E   0027           00276     banksel TIMESET_IOCN
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+004F   1212           00277     bcf TIMESET_IOCN,TIMESET_PIN
+                      00278 ; tonalité d'éveil
+0050   3014           00279     movlw .20
+                      00280     pushw
+0051   001C               M     movwi ++FSR1
+0052   3001           00281     movlw 1
+                      00282     pushw
+0053   001C               M     movwi ++FSR1
+0054   2???           00283     call tone
+                      00284 ; ajustement du temps
+0055   2???           00285     call timeset
+                      00286 ; démarrage de la séquence descente du sachet dans la tasse
+0056   3022           00287     movlw SERVO_POS_BAS 
+0057   2???           00288     call servo_pos
+                      00289 ;   attend expiration de la minuterie
+                      00290 ;   avec mise à jour de LED_BAR    
+MPASM 5.68                           MAT.ASM   9-3-2016  21:05:04         PAGE  7
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0058   2???           00291     call wait_timeout
+                      00292 ;   minuterie  expirée soulève le sachet    
+0059   303B           00293     movlw SERVO_POS_HAUT
+005A   2???           00294     call servo_pos
+                      00295 ;   sonne l'alarme
+005B   2???           00296     call alarm
+                      00297 ; lorsque la séquence est terminée retourne en sommeil
+005C   2???           00298     goto main
+                      00299     
+                      00300     
+                      00301 ;l'utilisateur doit ajuster le temps de trempage    
+005D                  00302 timeset:
+                      00303 #ifdef DEBUG
+005D   3096           00304     movlw D'150'
+005E   2???           00305     call start_timer
+                      00306 #endif    
+005F   0008           00307     return
+                      00308 
+                      00309 ;  attend expiration de la minuterie
+                      00310 ;  mise à jour affichage
+                      00311 #define RESTE ACAL    
+0060                  00312 wait_timeout:
+                      00313     display_enable
+0060   0024               M     banksel DISP_WPU
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0061   018E               M     clrf DISP_WPU
+0062                  00314 wait_loop:
+0062   1C00           00315     btfss flags, F_SEC
+0063   3???           00316     bra timeout
+0064   08??           00317     movfw secondes
+0065   2???           00318     call div15
+0066   00??           00319     movwf temp
+0067   08??           00320     movf RESTE,F
+0068   1903           00321     skpnz
+0069   3???           00322     bra $+3
+Message[305]: Using default destination of 1 (file).
+006A   0A??           00323     incf temp
+006B   3???           00324     bra $+3
+006C   300F           00325     movlw 0xf
+006D   00??           00326     movwf RESTE
+                      00327 ; initialise période pour PWM intensité LED
+006E   300F           00328     movlw 0xf
+006F   00??           00329     movwf pwm_period
+0070                  00330 pwm_loop:
+0070   08??           00331     movf RESTE,F
+0071   1903           00332     skpnz
+0072   01??           00333     clrf temp
+0073   08??           00334     movfw temp
+0074   2???           00335     call light_segment
+0075   08??           00336     movf RESTE,F
+0076   1D03           00337     skpz
+0077   03??           00338     decf RESTE,F
+Message[305]: Using default destination of 1 (file).
+MPASM 5.68                           MAT.ASM   9-3-2016  21:05:04         PAGE  8
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0078   03??           00339     decf pwm_period
+0079   1D03           00340     skpz
+007A   3???           00341     bra pwm_loop
+007B   3???           00342     bra wait_loop
+007C                  00343 timeout:    
+                      00344     display_disable
+007C   303F               M     movlw 0x3f
+007D   0021               M     banksel DISP_TRIS
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+007E   008E               M     movwf DISP_TRIS
+007F   0024               M     banksel DISP_WPU
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0080   008E               M     movwf DISP_WPU
+0081   0008           00345     return
+                      00346 
+                      00347 
+                      00348 ; sonne l'alarme de fin de trempage    
+0082                  00349 alarm:
+                      00350     
+0082   0008           00351     return
+                      00352 
+                      00353 ; fait entendre une tonalité
+                      00354 ; entrée:  pile ( d n -- )
+                      00355 ;    d -> durée en multiple de 4 msec.
+                      00356 ;    n -> indice de la note dans la table SCALE    
+0083                  00357 tone:
+                      00358 ; prépare FSR0 pour accéder table SCALE
+0083   30??           00359     movlw high SCALE
+0084   0085           00360     movwf FSR0H
+0085   1785           00361     bsf FSR0H,7
+0086   30??           00362     movlw low SCALE
+0087   0084           00363     movwf FSR0L
+                      00364 ;ajoute l'indice de la note à FSR0    
+                      00365     popw
+0088   0017               M     moviw FSR1--
+Message[305]: Using default destination of 1 (file).
+0089   0784           00366     addwf FSR0L
+008A   3F00           00367     moviw 0[FSR0]
+008B   0020           00368     banksel PR2
+008C   009B           00369     movwf PR2  ;la valeur retirée de SCALE détermine la période PWM
+                      00370     pushw       ;sauvegarde sur la pile temporairement
+008D   001C               M     movwi ++FSR1
+Message[305]: Using default destination of 1 (file).
+008E   3689           00371     lsrf WREG   ; cette valeur divisé par 4 va dans CCPxL
+Message[305]: Using default destination of 1 (file).
+008F   3689           00372     lsrf WREG
+0090   0025           00373     banksel TONE_CCPRL
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0091   0091           00374     movwf TONE_CCPRL   ; les 6 bits les plus significatifs du rapport cyclique
+                      00375     popw
+0092   0017               M     moviw FSR1--
+0093   3903           00376     andlw 3    ; les 2 bites les moins significatifs du rapport cyclique
+Message[305]: Using default destination of 1 (file).
+MPASM 5.68                           MAT.ASM   9-3-2016  21:05:04         PAGE  9
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0094   0E89           00377     swapf WREG ; dans bits 4 et 5 de CCPxCON
+0095   380C           00378     iorlw (3<<2) ; mode PWM
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0096   0093           00379     movwf TONE_CCPCON  ; PWM configuré
+                      00380 ; configuration de la sortie pour le PWM
+0097   0021           00381     banksel TONE_TRIS
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0098   108C           00382     bcf TONE_TRIS, TONE_PIN ; broche en mode sortie
+                      00383 ; activation minuterie TIMER2
+0099   0020           00384     banksel T2CON
+009A   3006           00385     movlw (2<<T2CKPS0)|(1<<TMR2ON)
+009B   009C           00386     movwf T2CON ; préscale 16 et TIMER2 on.
+                      00387     popw     ; durée
+009C   0017               M     moviw FSR1--
+009D   2???           00388     call start_msec4_tmr  
+009E   1880           00389     btfsc flags, F_MSEC4
+009F   3???           00390     bra $-1
+                      00391 ;désactive tone pwm
+                      00392 ;arrête TIMER2
+00A0   0020           00393     banksel T2CON
+00A1   111C           00394     bcf T2CON, TMR2ON
+00A2   0025           00395     banksel TONE_CCPCON
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+00A3   0193           00396     clrf TONE_CCPCON
+00A4   0021           00397     banksel TONE_TRIS
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+00A5   148C           00398     bsf TONE_TRIS, TONE_PIN
+00A6   0008           00399     return
+                      00400     
+                      00401 ; allume un segment de la barre LED
+                      00402 ; entrée:
+                      00403 ;   W contient le numéro du segment
+                      00404 ;   à allumer
+00A7                  00405 light_segment:
+                      00406     pushw
+00A7   001C               M     movwi ++FSR1
+                      00407 ; initialise FSR0 pour pointer sur la table LED_CON
+00A8   30??           00408     movlw high LED_CONN
+00A9   0085           00409     movwf FSR0H
+00AA   1785           00410     bsf FSR0H, 7
+00AB   30??           00411     movlw low LED_CONN
+00AC   0084           00412     movwf FSR0L
+                      00413     popw
+00AD   0017               M     moviw FSR1--
+Message[305]: Using default destination of 1 (file).
+00AE   3589           00414     lslf WREG   ; segment * 2
+Message[305]: Using default destination of 1 (file).
+00AF   0784           00415     addwf FSR0L ; ajuste le pointeur de table
+00B0   0800           00416     movfw INDF0  ; obtient valeur sortie PORT
+00B1   0022           00417     banksel DISP_LAT
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+00B2   008E           00418     movwf DISP_LAT
+Message[305]: Using default destination of 1 (file).
+MPASM 5.68                           MAT.ASM   9-3-2016  21:05:04         PAGE 10
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00B3   0A84           00419     incf FSR0L
+00B4   0800           00420     movfw INDF0  ; obtient valeur TRIS
+00B5   0021           00421     banksel DISP_TRIS
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+00B6   008E           00422     movwf DISP_TRIS
+00B7   0008           00423     return
+                      00424 
+                      00425 ; commande la position du servo-moteur
+                      00426 ;  entrée:
+                      00427 ;      W contient la valeur de contrôle
+                      00428 ;  valeur comprise entre SERVO_POS_BAS et SERVO_POS_HAUT
+00B8                  00429 servo_pos:
+                      00430     pushw
+00B8   001C               M     movwi ++FSR1
+                      00431 ; contrôle des limites    
+00B9   3022           00432     movlw SERVO_POS_BAS
+00BA   0201           00433     subwf INDF1,W
+00BB   3022           00434     movlw SERVO_POS_BAS
+00BC   1C03           00435     skpc
+00BD   0081           00436     movwf INDF1
+00BE   303B           00437     movlw SERVO_POS_HAUT
+00BF   0201           00438     subwf INDF1,W
+00C0   303B           00439     movlw SERVO_POS_HAUT
+00C1   1803           00440     skpnc
+00C2   0081           00441     movwf INDF1
+                      00442 ; pour obtenir une période de 50Hertz sur TIMER2 il faut réduire
+                      00443 ; Fosc à 2Mhz
+00C3   0021           00444     banksel OSCCON
+00C4   3060           00445     movlw F2MHZ<<IRCF0   ; Fosc=2Mhz
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+00C5   0099           00446     movwf OSCCON
+                      00447 ; configuration TIMER2 pour période 20msec
+00C6   0020           00448     banksel T2CON
+00C7   309B           00449     movlw SERVO_PERIOD ; 20msec
+00C8   009B           00450     movwf PR2
+00C9   3007           00451     movlw (3<<T2CKPS0)|(1<<TMR2ON)
+00CA   009C           00452     movwf T2CON
+                      00453 ;durée du pulse 8 bits les plus significatifs dans CCP2RL et les 
+                      00454 ;2 moins significatifs dans CCP2CON:4,5
+00CB   0025           00455     banksel SERVO_CCPCON
+00CC   3F40           00456     moviw 0[FSR1]
+Message[305]: Using default destination of 1 (file).
+00CD   3689           00457     lsrf WREG
+Message[305]: Using default destination of 1 (file).
+00CE   3689           00458     lsrf WREG
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+00CF   0098           00459     movwf SERVO_CCPRL
+                      00460     popw
+00D0   0017               M     moviw FSR1--
+00D1   3903           00461     andlw 3
+Message[305]: Using default destination of 1 (file).
+00D2   0E89           00462     swapf WREG
+00D3   380C           00463     iorlw 3<<CCP2M2  ; mode PWM
+MPASM 5.68                           MAT.ASM   9-3-2016  21:05:04         PAGE 11
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+00D4   009A           00464     movwf SERVO_CCPCON
+                      00465 ; délais d'attente rotation moteur
+                      00466 ;  1 seconde
+00D5   3001           00467     movlw 1
+00D6   2???           00468     call start_timer
+00D7   1800           00469     btfsc flags, F_SEC
+00D8   3???           00470     bra $-1
+                      00471 ;arret de la commande
+00D9   0025           00472     banksel SERVO_CCPCON
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+00DA   019A           00473     clrf SERVO_CCPCON
+00DB   0020           00474     banksel T2CON
+00DC   111C           00475     bcf T2CON, TMR2ON
+                      00476 ;remet Fosc à 8Mhz    
+00DD   0021           00477     banksel OSCCON
+00DE   3070           00478     movlw F8MHZ<<IRCF0  ; Fosc=8Mhz
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+00DF   0099           00479     movwf OSCCON
+00E0   0008           00480     return
+                      00481     
+                      00482 ; division non signée entier 8 bits par 15
+                      00483 ; entrée:
+                      00484 ;   dividende dans W
+                      00485 ;sortie:
+                      00486 ;   quotient dans ACAH
+                      00487 ;   reste dans ACAL    
+                      00488 #define DIVIDENDE ACAL    
+                      00489 #define QUOTIENT ACAH
+                      00490 #define DIVISEUR ACBL    
+00E1                  00491 div15:
+00E1   01??           00492     clrf QUOTIENT
+00E2   3A00           00493     xorlw 0
+00E3   1903           00494     skpnz
+00E4   3???           00495     bra div15_exit
+00E5   00??           00496     movwf DIVIDENDE
+00E6   30F0           00497     movlw 0xF0 ; diviseur<<4
+00E7   00??           00498     movwf DIVISEUR
+00E8   02??           00499     subwf DIVIDENDE,W
+00E9   1C03           00500     skpc
+00EA   3???           00501     bra div15_1
+00EB   1600           00502     bsf QUOTIENT,4
+00EC   00??           00503     movwf DIVIDENDE ; conserve reste pour prochaine étape
+00ED                  00504 div15_1:
+Message[305]: Using default destination of 1 (file).
+00ED   36??           00505     lsrf DIVISEUR
+00EE   08??           00506     movfw DIVISEUR
+00EF   02??           00507     subwf DIVIDENDE,W
+00F0   1C03           00508     skpc
+00F1   3???           00509     bra div15_2
+00F2   1580           00510     bsf QUOTIENT,3
+00F3   00??           00511     movwf DIVIDENDE
+00F4                  00512 div15_2:
+MPASM 5.68                           MAT.ASM   9-3-2016  21:05:04         PAGE 12
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+Message[305]: Using default destination of 1 (file).
+00F4   36??           00513     lsrf DIVISEUR
+00F5   08??           00514     movfw DIVISEUR
+00F6   02??           00515     subwf DIVIDENDE,W
+00F7   1C03           00516     skpc
+00F8   3???           00517     bra div15_3
+00F9   1500           00518     bsf QUOTIENT,2
+00FA   00??           00519     movwf DIVIDENDE
+00FB                  00520 div15_3:
+Message[305]: Using default destination of 1 (file).
+00FB   36??           00521     lsrf DIVISEUR
+00FC   08??           00522     movfw DIVISEUR
+00FD   02??           00523     subwf DIVIDENDE,W
+00FE   1C03           00524     skpc
+00FF   3???           00525     bra div15_4
+0100   1480           00526     bsf QUOTIENT,1
+0101   00??           00527     movwf DIVIDENDE
+0102                  00528 div15_4:
+Message[305]: Using default destination of 1 (file).
+0102   36??           00529     lsrf DIVISEUR
+0103   08??           00530     movfw DIVISEUR
+0104   02??           00531     subwf DIVIDENDE,W
+0105   1803           00532     skpnc
+0106   1400           00533     bsf QUOTIENT,0
+0107                  00534 div15_exit:
+0107   08??           00535     movfw QUOTIENT
+0108   0008           00536     return
+                      00537 
+                      00538 ; démarre la minuterie des secondes
+                      00539 ; utilisation du TIMER1 avec LFOSC.    
+                      00540 ; entrée:
+                      00541 ;   W=durée en secondes    
+0109                  00542 start_timer:
+0109   00??           00543     movwf secondes
+010A   0020           00544     banksel TMR1H
+010B   3083           00545     movlw high TMR1_DLY
+010C   0097           00546     movwf TMR1H
+010D   3000           00547     movlw low TMR1_DLY
+010E   0096           00548     movwf TMR1L
+010F   30C1           00549     movlw (3<<TMR1CS0)|1
+0110   0098           00550     movwf T1CON
+0111   0020           00551     banksel PIR1
+0112   1011           00552     bcf PIR1, TMR1IF
+0113   0021           00553     banksel PIE1
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0114   1411           00554     bsf PIE1, TMR1IE
+0115   170B           00555     bsf INTCON,PEIE
+0116   178B           00556     bsf INTCON,GIE
+0117   1400           00557     bsf flags, F_SEC
+0118   0008           00558     return
+                      00559 
+                      00560     
+                      00561 ; démarre la minuterie des millisecondes
+MPASM 5.68                           MAT.ASM   9-3-2016  21:05:04         PAGE 13
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00562 ; entrée:
+                      00563 ;    W contient la durée en multiple de 4 msec.
+0119                  00564 start_msec4_tmr:
+0119   00??           00565     movwf msec4
+011A   0020           00566     banksel TMR0
+011B   3006           00567     movlw TMR0_DLY
+011C   0095           00568     movwf TMR0
+011D   110B           00569     bcf INTCON, T0IF
+011E   168B           00570     bsf INTCON, T0IE
+011F   178B           00571     bsf INTCON, GIE
+0120   1480           00572     bsf flags, F_MSEC4
+0121   0008           00573     return
+                      00574     
+                      00575 ;auto test à l'allumage
+                      00576 ; allume tous les segments l'un après l'autre
+                      00577 ; test alarme
+                      00578 ; test servo-moteur
+0122                  00579 self_test:
+                      00580     display_enable
+0122   0024               M     banksel DISP_WPU
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0123   018E               M     clrf DISP_WPU
+0124   300A           00581     movlw .10
+                      00582     pushw
+0125   001C               M     movwi ++FSR1
+0126                  00583 disp_test:
+0126   3F40           00584     moviw 0[FSR1]
+0127   2???           00585     call light_segment
+0128   3019           00586     movlw .25
+                      00587     pushw
+0129   001C               M     movwi ++FSR1
+                      00588     over
+012A   3F7F               M     moviw (-1)&0x3f[FSR1]
+                          M     pushw
+012B   001C               M     movwi ++FSR1
+012C   2???           00589     call tone
+                      00590 ;    call start_msec4_tmr
+                      00591 ;    btfsc flags, F_MSEC4
+                      00592 ;    bra $-1
+012D   0B81           00593     decfsz INDF1,F
+012E   3???           00594     bra disp_test
+                      00595     popw
+012F   0017               M     moviw FSR1--
+                      00596     display_disable
+0130   303F               M     movlw 0x3f
+0131   0021               M     banksel DISP_TRIS
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0132   008E               M     movwf DISP_TRIS
+0133   0024               M     banksel DISP_WPU
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0134   008E               M     movwf DISP_WPU
+0135                  00597 tone_test:
+0135   3014           00598     movlw .20
+MPASM 5.68                           MAT.ASM   9-3-2016  21:05:04         PAGE 14
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00599     pushw
+0136   001C               M     movwi ++FSR1
+0137   3015           00600     movlw .21
+                      00601     pushw
+0138   001C               M     movwi ++FSR1
+0139   2???           00602     call tone
+013A                  00603 servo_test: 
+013A   3022           00604     movlw SERVO_POS_BAS
+013B   2???           00605     call servo_pos
+013C   303B           00606     movlw SERVO_POS_HAUT
+013D   2???           00607     call servo_pos
+013E   0008           00608     return
+                      00609     
+                      00610     
+                      00611 ;;;;;;;;;;;;;;;;
+                      00612 ;  tables
+                      00613 ;;;;;;;;;;;;;;;;  
+                      00614     org  0x700   
+                      00615 ; connection des LED
+0700                  00616 LED_CONN: ; PORT data, TRIS data
+0700   3400 34FF      00617     dt 0, 0xFF ; tous les segments éteints
+0702   3420 34DE      00618     dt 1<<A1, ~(1<<C1 | 1<<A1)
+0704   3401 34DE      00619     dt 1<<A2, ~(1<<C2 | 1<<A2)
+0706   3401 34EE      00620     dt 1<<A3, ~(1<<C3 | 1<<A3)
+0708   3401 34F6      00621     dt 1<<A4, ~(1<<C4 | 1<<A4)
+070A   3402 34DD      00622     dt 1<<A5, ~(1<<C5 | 1<<A5)
+070C   3402 34ED      00623     dt 1<<A6, ~(1<<C6 | 1<<A6)
+070E   3402 34F5      00624     dt 1<<A7, ~(1<<C7 | 1<<A7)
+0710   3404 34DB      00625     dt 1<<A8, ~(1<<C8 | 1<<A8)
+0712   3404 34EB      00626     dt 1<<A9, ~(1<<C9 | 1<<A9)
+0714   3404 34F3      00627     dt 1<<A10, ~(1<<C10 | 1<<A10)
+0716   3400 34FF      00628     dt 0, 0xFF
+0718   3400 34FF      00629     dt 0, 0xFF
+071A   3400 34FF      00630     dt 0, 0xFF
+071C   3400 34FF      00631     dt 0, 0xFF
+071E   3400 34FF      00632     dt 0, 0xFF
+                      00633 
+                      00634 ;valeur de PR2 pour généré tonalités gamme tempéré
+0720                  00635 SCALE:
+0720   34EE           00636     dt .238 ; 523 DO
+0721   34E1           00637     dt .225 ; 554 DO#
+0722   34D4           00638     dt .212 ; 587 RÉ
+0723   34C8           00639     dt .200 ; 622 RÉ#
+0724   34BD           00640     dt .189 ; 659 MI
+0725   34B2           00641     dt .178 ; 698 FA
+0726   34A8           00642     dt .168 ; 740 FA#
+0727   349E           00643     dt .158 ; 784 SOL
+0728   3495           00644     dt .149 ; 831 SOL#
+0729   348D           00645     dt .141 ; 880 LA
+072A   3485           00646     dt .133 ; 932 LA#
+072B   347E           00647     dt .126 ; 988 SI
+072C   3476           00648     dt .118 ; 1047 DO
+072D   3470           00649     dt .112 ; 1109 DO#
+MPASM 5.68                           MAT.ASM   9-3-2016  21:05:04         PAGE 15
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+072E   3469           00650     dt .105 ; 1175 RÉ
+072F   3463           00651     dt .99  ; 1245 RÉ#
+0730   345E           00652     dt .94  ; 1319 MI
+0731   3458           00653     dt .88  ; 1397 FA
+0732   3453           00654     dt .83  ; 1480 FA#
+0733   344F           00655     dt .79  ; 1568 SOL
+0734   344A           00656     dt .74  ; 1661 SOL#
+0735   3446           00657     dt .70  ; 1760 LA
+                      00658 
+                      00659     
+                      00660 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;    
+39E4 1E7F             00661     end
+MPASM 5.68                           MAT.ASM   9-3-2016  21:05:04         PAGE 16
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+A1                                RC5
+A10                               RC2
+A2                                RC0
+A3                                RC0
+A4                                RC0
+A5                                RC1
+A6                                RC1
+A7                                RC1
+A8                                RC2
+A9                                RC2
+ACAH                              00000001
+ACAL                              00000000
+ACBH                              00000003
+ACBL                              00000002
+ACKDT                             00000005
+ACKEN                             00000004
+ACKSTAT                           00000006
+ACKTIM                            00000007
+ADCON0                            0000009D
+ADCON1                            0000009E
+ADCON2                            0000009F
+ADD0                              00000000
+ADD1                              00000001
+ADD2                              00000002
+ADD3                              00000003
+ADD4                              00000004
+ADD5                              00000005
+ADD6                              00000006
+ADD7                              00000007
+ADFM                              00000007
+ADFVR0                            00000000
+ADFVR1                            00000001
+ADGO                              00000001
+ADIE                              00000006
+ADIF                              00000006
+ADNREF                            00000002
+ADON                              00000000
+ADPREF0                           00000000
+ADPREF1                           00000001
+ADRES                             0000009B
+ADRESH                            0000009C
+ADRESL                            0000009B
+AHEN                              00000001
+ANSA0                             00000000
+ANSA1                             00000001
+ANSA2                             00000002
+ANSA4                             00000004
+ANSC0                             00000000
+ANSC1                             00000001
+ANSC2                             00000002
+ANSC3                             00000003
+ANSC4                             00000004
+ANSC5                             00000005
+MPASM 5.68                           MAT.ASM   9-3-2016  21:05:04         PAGE 17
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+ANSELA                            0000018C
+ANSELC                            0000018E
+BCL1IE                            00000003
+BCL1IF                            00000003
+BF                                00000000
+BKA10                             00000002
+BKA11                             00000003
+BKA12                             00000004
+BKA13                             00000005
+BKA14                             00000006
+BKA8                              00000000
+BKA9                              00000001
+BOEN                              00000004
+BORCON                            00000116
+BORFS                             00000006
+BORRDY                            00000000
+BSR                               00000008
+BSR0                              00000000
+BSR1                              00000001
+BSR2                              00000002
+BSR3                              00000003
+BSR4                              00000004
+BSR_SHAD                          00000FE6
+BTN_TRIS                          TRISA
+BTN_WPU                           WPUA
+BUF0                              00000000
+BUF1                              00000001
+BUF2                              00000002
+BUF3                              00000003
+BUF4                              00000004
+BUF5                              00000005
+BUF6                              00000006
+BUF7                              00000007
+C                                 00000000
+C1                                RC0
+C10                               RC3
+C2                                RC5
+C3                                RC4
+C4                                RC3
+C5                                RC5
+C6                                RC4
+C7                                RC3
+C8                                RC5
+C9                                RC4
+CCP1CON                           00000293
+CCP1IE                            00000002
+CCP1IF                            00000002
+CCP1M0                            00000000
+CCP1M1                            00000001
+CCP1M2                            00000002
+CCP1M3                            00000003
+CCP1PPS                           00000E14
+CCP1X                             00000005
+MPASM 5.68                           MAT.ASM   9-3-2016  21:05:04         PAGE 18
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+CCP1Y                             00000004
+CCP2CON                           0000029A
+CCP2IE                            00000000
+CCP2IF                            00000000
+CCP2M0                            00000000
+CCP2M1                            00000001
+CCP2M2                            00000002
+CCP2M3                            00000003
+CCP2PPS                           00000E15
+CCP2X                             00000005
+CCP2Y                             00000004
+CCPIE                             00000002
+CCPIF                             00000002
+CCPR1                             00000291
+CCPR1H                            00000292
+CCPR1L                            00000291
+CCPR2                             00000298
+CCPR2H                            00000299
+CCPR2L                            00000298
+CDAFVR0                           00000002
+CDAFVR1                           00000003
+CFGS                              00000006
+CHS0                              00000002
+CHS1                              00000003
+CHS2                              00000004
+CHS3                              00000005
+CHS4                              00000006
+CKE                               00000006
+CKP                               00000004
+C_SHAD                            00000000
+DC                                00000001
+DC1B0                             00000004
+DC1B1                             00000005
+DC2B0                             00000004
+DC2B1                             00000005
+DC_SHAD                           00000001
+DEBUG                             
+DHEN                              00000000
+DISPLAY                           PORTC
+DISP_LAT                          LATC
+DISP_TRIS                         TRISC
+DISP_WPU                          WPUC
+DIVIDENDE                         ACAL
+DIVISEUR                          ACBL
+D_NOT_A                           00000005
+ECCP1CON                          00000293
+ECCP2CON                          0000029A
+F                                 00000001
+F2MHZ                             0000000C
+F8MHZ                             0000000E
+FREE                              00000004
+FSR0                              00000004
+FSR0H                             00000005
+MPASM 5.68                           MAT.ASM   9-3-2016  21:05:04         PAGE 19
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+FSR0H_SHAD                        00000FE9
+FSR0L                             00000004
+FSR0L_SHAD                        00000FE8
+FSR1                              00000006
+FSR1H                             00000007
+FSR1H_SHAD                        00000FEB
+FSR1L                             00000006
+FSR1L_SHAD                        00000FEA
+FVRCON                            00000117
+FVREN                             00000007
+FVRRDY                            00000006
+F_MSEC4                           1
+F_SEC                             0
+GCEN                              00000007
+GIE                               00000007
+GO                                00000001
+GO_NOT_DONE                       00000001
+HFIOFL                            00000003
+HFIOFR                            00000004
+HFIOFS                            00000000
+ICDBK0H                           00000F9E
+INDF0                             00000000
+INDF1                             00000001
+INLVLA                            0000038C
+INLVLA0                           00000000
+INLVLA1                           00000001
+INLVLA2                           00000002
+INLVLA3                           00000003
+INLVLA4                           00000004
+INLVLA5                           00000005
+INLVLC                            0000038E
+INLVLC0                           00000000
+INLVLC1                           00000001
+INLVLC2                           00000002
+INLVLC3                           00000003
+INLVLC4                           00000004
+INLVLC5                           00000005
+INTCON                            0000000B
+INTE                              00000004
+INTEDG                            00000006
+INTF                              00000001
+INTPPS                            00000E10
+IOCAF                             00000393
+IOCAF0                            00000000
+IOCAF1                            00000001
+IOCAF2                            00000002
+IOCAF3                            00000003
+IOCAF4                            00000004
+IOCAF5                            00000005
+IOCAN                             00000392
+IOCAN0                            00000000
+IOCAN1                            00000001
+IOCAN2                            00000002
+MPASM 5.68                           MAT.ASM   9-3-2016  21:05:04         PAGE 20
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+IOCAN3                            00000003
+IOCAN4                            00000004
+IOCAN5                            00000005
+IOCAP                             00000391
+IOCAP0                            00000000
+IOCAP1                            00000001
+IOCAP2                            00000002
+IOCAP3                            00000003
+IOCAP4                            00000004
+IOCAP5                            00000005
+IOCCF                             00000399
+IOCCF0                            00000000
+IOCCF1                            00000001
+IOCCF2                            00000002
+IOCCF3                            00000003
+IOCCF4                            00000004
+IOCCF5                            00000005
+IOCCN                             00000398
+IOCCN0                            00000000
+IOCCN1                            00000001
+IOCCN2                            00000002
+IOCCN3                            00000003
+IOCCN4                            00000004
+IOCCN5                            00000005
+IOCCP                             00000397
+IOCCP0                            00000000
+IOCCP1                            00000001
+IOCCP2                            00000002
+IOCCP3                            00000003
+IOCCP4                            00000004
+IOCCP5                            00000005
+IOCIE                             00000003
+IOCIF                             00000000
+IRCF0                             00000003
+IRCF1                             00000004
+IRCF2                             00000005
+IRCF3                             00000006
+LATA                              0000010C
+LATA0                             00000000
+LATA1                             00000001
+LATA2                             00000002
+LATA4                             00000004
+LATA5                             00000005
+LATC                              0000010E
+LATC0                             00000000
+LATC1                             00000001
+LATC2                             00000002
+LATC3                             00000003
+LATC4                             00000004
+LATC5                             00000005
+LED_CONN                          00000700
+LFIOFR                            00000001
+LWLO                              00000005
+MPASM 5.68                           MAT.ASM   9-3-2016  21:05:04         PAGE 21
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+MFIOFR                            00000002
+MSK0                              00000000
+MSK1                              00000001
+MSK2                              00000002
+MSK3                              00000003
+MSK4                              00000004
+MSK5                              00000005
+MSK6                              00000006
+MSK7                              00000007
+NOT_BOR                           00000000
+NOT_PD                            00000003
+NOT_POR                           00000001
+NOT_RI                            00000002
+NOT_RMCLR                         00000003
+NOT_RWDT                          00000004
+NOT_T1SYNC                        00000002
+NOT_TO                            00000004
+NOT_WPUEN                         00000007
+ODA0                              00000000
+ODA1                              00000001
+ODA2                              00000002
+ODA4                              00000004
+ODA5                              00000005
+ODC0                              00000000
+ODC1                              00000001
+ODC2                              00000002
+ODC3                              00000003
+ODC4                              00000004
+ODC5                              00000005
+ODCONA                            0000028C
+ODCONC                            0000028E
+OPA1CON                           00000511
+OPA1EN                            00000007
+OPA1PCH0                          00000000
+OPA1PCH1                          00000001
+OPA1SP                            00000006
+OPA1UG                            00000004
+OPA2CON                           00000515
+OPA2EN                            00000007
+OPA2PCH0                          00000000
+OPA2PCH1                          00000001
+OPA2SP                            00000006
+OPA2UG                            00000004
+OPTION_REG                        00000095
+OSCCON                            00000099
+OSCSTAT                           0000009A
+OSCTUNE                           00000098
+OSTS                              00000005
+P                                 00000004
+PCIE                              00000006
+PCL                               00000002
+PCLATH                            0000000A
+PCLATH_SHAD                       00000FE7
+MPASM 5.68                           MAT.ASM   9-3-2016  21:05:04         PAGE 22
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+PCON                              00000096
+PEIE                              00000006
+PEN                               00000002
+PIE1                              00000091
+PIE2                              00000092
+PIE3                              00000093
+PIR1                              00000011
+PIR2                              00000012
+PIR3                              00000013
+PLLR                              00000006
+PMADR                             00000191
+PMADRH                            00000192
+PMADRL                            00000191
+PMCON1                            00000195
+PMCON2                            00000196
+PMDAT                             00000193
+PMDATH                            00000194
+PMDATL                            00000193
+PORTA                             0000000C
+PORTC                             0000000E
+PPSLOCK                           00000E0F
+PPSLOCKED                         00000000
+PR2                               0000001B
+PS0                               00000000
+PS1                               00000001
+PS2                               00000002
+PSA                               00000003
+QUOTIENT                          ACAH
+RA0                               00000000
+RA0PPS                            00000E90
+RA1                               00000001
+RA1PPS                            00000E91
+RA2                               00000002
+RA2PPS                            00000E92
+RA3                               00000003
+RA4                               00000004
+RA4PPS                            00000E94
+RA5                               00000005
+RA5PPS                            00000E95
+RC0                               00000000
+RC0PPS                            00000EA0
+RC1                               00000001
+RC1PPS                            00000EA1
+RC2                               00000002
+RC2PPS                            00000EA2
+RC3                               00000003
+RC3PPS                            00000EA3
+RC4                               00000004
+RC4PPS                            00000EA4
+RC5                               00000005
+RC5PPS                            00000EA5
+RCEN                              00000003
+RD                                00000000
+MPASM 5.68                           MAT.ASM   9-3-2016  21:05:04         PAGE 23
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+RESTE                             ACAL
+RSEN                              00000001
+R_NOT_W                           00000002
+Reserved                          00000000
+S                                 00000003
+SBCDE                             00000002
+SBOREN                            00000007
+SCALE                             00000720
+SCIE                              00000005
+SCS0                              00000000
+SCS1                              00000001
+SDAHT                             00000003
+SEN                               00000000
+SERVO_CCPCON                      CCP2CON
+SERVO_CCPRL                       CCPR2L
+SERVO_LAT                         LATA
+SERVO_NEUTRAL_PULSE               0000002F
+SERVO_OUT_FN                      H'D'
+SERVO_PERIOD                      0000009B
+SERVO_PIN                         RA2
+SERVO_PIN_PPS                     RA2PPS
+SERVO_POS_BAS                     00000022
+SERVO_POS_HAUT                    0000003B
+SERVO_PULSE_SPAN                  0000001A
+SERVO_TRIS                        TRISA
+SERVO_WPU                         WPUA
+SLRA0                             00000000
+SLRA1                             00000001
+SLRA2                             00000002
+SLRA4                             00000004
+SLRA5                             00000005
+SLRC0                             00000000
+SLRC1                             00000001
+SLRC2                             00000002
+SLRC3                             00000003
+SLRC4                             00000004
+SLRC5                             00000005
+SLRCONA                           0000030C
+SLRCONC                           0000030E
+SMP                               00000007
+SOSCR                             00000007
+SPLLEN                            00000007
+SSP1ADD                           00000212
+SSP1ADD0                          00000000
+SSP1ADD1                          00000001
+SSP1ADD2                          00000002
+SSP1ADD3                          00000003
+SSP1ADD4                          00000004
+SSP1ADD5                          00000005
+SSP1ADD6                          00000006
+SSP1ADD7                          00000007
+SSP1BUF                           00000211
+SSP1BUF0                          00000000
+MPASM 5.68                           MAT.ASM   9-3-2016  21:05:04         PAGE 24
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+SSP1BUF1                          00000001
+SSP1BUF2                          00000002
+SSP1BUF3                          00000003
+SSP1BUF4                          00000004
+SSP1BUF5                          00000005
+SSP1BUF6                          00000006
+SSP1BUF7                          00000007
+SSP1CON                           00000215
+SSP1CON1                          00000215
+SSP1CON2                          00000216
+SSP1CON3                          00000217
+SSP1IE                            00000003
+SSP1IF                            00000003
+SSP1MSK                           00000213
+SSP1MSK0                          00000000
+SSP1MSK1                          00000001
+SSP1MSK2                          00000002
+SSP1MSK3                          00000003
+SSP1MSK4                          00000004
+SSP1MSK5                          00000005
+SSP1MSK6                          00000006
+SSP1MSK7                          00000007
+SSP1STAT                          00000214
+SSPADD                            00000212
+SSPBUF                            00000211
+SSPCLKPPS                         00000E20
+SSPCON                            00000215
+SSPCON1                           00000215
+SSPCON2                           00000216
+SSPCON3                           00000217
+SSPDATPPS                         00000E21
+SSPEN                             00000005
+SSPM0                             00000000
+SSPM1                             00000001
+SSPM2                             00000002
+SSPM3                             00000003
+SSPMSK                            00000213
+SSPOV                             00000006
+SSPSSPPS                          00000E22
+SSPSTAT                           00000214
+START_PIN                         RA5
+STATUS                            00000003
+STATUS_SHAD                       00000FE4
+STKOVF                            00000007
+STKPTR                            00000FED
+STKUNF                            00000006
+SWDTEN                            00000000
+T0CKIPPS                          00000E11
+T0CS                              00000005
+T0IE                              00000005
+T0IF                              00000002
+T0SE                              00000004
+T1CKIPPS                          00000E12
+MPASM 5.68                           MAT.ASM   9-3-2016  21:05:04         PAGE 25
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+T1CKPS0                           00000004
+T1CKPS1                           00000005
+T1CON                             00000018
+T1GCON                            00000019
+T1GGO_NOT_DONE                    00000003
+T1GPOL                            00000006
+T1GPPS                            00000E13
+T1GSPM                            00000004
+T1GSS0                            00000000
+T1GSS1                            00000001
+T1GTM                             00000005
+T1GVAL                            00000002
+T1OSCEN                           00000003
+T2CKPS0                           00000000
+T2CKPS1                           00000001
+T2CON                             0000001C
+T2OUTPS0                          00000003
+T2OUTPS1                          00000004
+T2OUTPS2                          00000005
+T2OUTPS3                          00000006
+TIMESET_IOCF                      IOCAF
+TIMESET_IOCN                      IOCAN
+TIMESET_PIN                       RA4
+TIME_INCR                         00000EA6
+TIME_MAX                          0000927C
+TMR0                              00000015
+TMR0CS                            00000005
+TMR0IE                            00000005
+TMR0IF                            00000002
+TMR0SE                            00000004
+TMR0_DLY                          00000006
+TMR1                              00000016
+TMR1CS0                           00000006
+TMR1CS1                           00000007
+TMR1GE                            00000007
+TMR1GIE                           00000007
+TMR1GIF                           00000007
+TMR1H                             00000017
+TMR1IE                            00000000
+TMR1IF                            00000000
+TMR1L                             00000016
+TMR1ON                            00000000
+TMR1_DLY                          00008300
+TMR2                              0000001A
+TMR2IE                            00000001
+TMR2IF                            00000001
+TMR2ON                            00000002
+TONE_CCPCON                       CCP1CON
+TONE_CCPRL                        CCPR1L
+TONE_LAT                          LATA
+TONE_OUT_FN                       H'C'
+TONE_PIN                          RA1
+TONE_PIN_PPS                      RA1PPS
+MPASM 5.68                           MAT.ASM   9-3-2016  21:05:04         PAGE 26
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+TONE_TRIS                         TRISA
+TONE_WPU                          WPUA
+TOSH                              00000FEF
+TOSL                              00000FEE
+TRIGSEL0                          00000004
+TRIGSEL1                          00000005
+TRIGSEL2                          00000006
+TRIGSEL3                          00000007
+TRISA                             0000008C
+TRISA0                            00000000
+TRISA1                            00000001
+TRISA2                            00000002
+TRISA4                            00000004
+TRISA5                            00000005
+TRISC                             0000008E
+TRISC0                            00000000
+TRISC1                            00000001
+TRISC2                            00000002
+TRISC3                            00000003
+TRISC4                            00000004
+TRISC5                            00000005
+TSEN                              00000005
+TSRNG                             00000004
+TUN0                              00000000
+TUN1                              00000001
+TUN2                              00000002
+TUN3                              00000003
+TUN4                              00000004
+TUN5                              00000005
+UA                                00000001
+VREGCON                           00000197
+VREGPM                            00000001
+W                                 00000000
+WCOL                              00000007
+WDTCON                            00000097
+WDTPS0                            00000001
+WDTPS1                            00000002
+WDTPS2                            00000003
+WDTPS3                            00000004
+WDTPS4                            00000005
+WPUA                              0000020C
+WPUA0                             00000000
+WPUA1                             00000001
+WPUA2                             00000002
+WPUA3                             00000003
+WPUA4                             00000004
+WPUA5                             00000005
+WPUC                              0000020E
+WPUC0                             00000000
+WPUC1                             00000001
+WPUC2                             00000002
+WPUC3                             00000003
+WPUC4                             00000004
+MPASM 5.68                           MAT.ASM   9-3-2016  21:05:04         PAGE 27
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+WPUC5                             00000005
+WR                                00000001
+WREG                              00000009
+WREG_SHAD                         00000FE5
+WREN                              00000002
+WRERR                             00000003
+Z                                 00000002
+ZCD1CON                           0000011C
+ZCD1EN                            00000007
+ZCD1INTN                          00000000
+ZCD1INTP                          00000001
+ZCD1OUT                           00000005
+ZCD1POL                           00000004
+ZCDIE                             00000004
+ZCDIF                             00000004
+Z_SHAD                            00000002
+_.org_1_0069                      00000069
+_.org_1_006B                      0000006B
+_.org_1_009F                      0000009F
+_.org_1_00D8                      000000D8
+_BOREN_NSLEEP                     00003DFF
+_BOREN_OFF                        000039FF
+_BOREN_ON                         00003FFF
+_BOREN_SBODEN                     00003BFF
+_BORV_HI                          00003BFF
+_BORV_LO                          00003FFF
+_CLKOUTEN_OFF                     00003FFF
+_CLKOUTEN_ON                      000037FF
+_CONFIG1                          00008007
+_CONFIG2                          00008008
+_CP_OFF                           00003FFF
+_CP_ON                            00003F7F
+_DEVID1                           00008006
+_FOSC_ECH                         00003FFF
+_FOSC_ECL                         00003FFD
+_FOSC_ECM                         00003FFE
+_FOSC_INTOSC                      00003FFC
+_IDLOC0                           00008000
+_IDLOC1                           00008001
+_IDLOC2                           00008002
+_IDLOC3                           00008003
+_LPBOR_OFF                        00003FFF
+_LPBOR_ON                         000037FF
+_LVP_OFF                          00001FFF
+_LVP_ON                           00003FFF
+_MCLRE_OFF                        00003FBF
+_MCLRE_ON                         00003FFF
+_PLLEN_OFF                        00003EFF
+_PLLEN_ON                         00003FFF
+_PPS1WAY_OFF                      00003FFB
+_PPS1WAY_ON                       00003FFF
+_PWRTE_OFF                        00003FFF
+_PWRTE_ON                         00003FDF
+MPASM 5.68                           MAT.ASM   9-3-2016  21:05:04         PAGE 28
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+_STVREN_OFF                       00003DFF
+_STVREN_ON                        00003FFF
+_WDTE_NSLEEP                      00003FF7
+_WDTE_OFF                         00003FE7
+_WDTE_ON                          00003FFF
+_WDTE_SWDTEN                      00003FEF
+_WRT_ALL                          00003FFC
+_WRT_BOOT                         00003FFE
+_WRT_HALF                         00003FFD
+_WRT_OFF                          00003FFF
+_ZCDDIS_OFF                       00003F7F
+_ZCDDIS_ON                        00003FFF
+__16F1703                         00000001
+__DEBUG                           
+__MPLAB_DEBUGGER_PK3              1
+alarm                             00000082
+alarm_disable                     
+disable_timer                     00000024
+disp_test                         00000126
+display_disable                   
+display_enable                    
+div15                             000000E1
+div15_1                           000000ED
+div15_2                           000000F4
+div15_3                           000000FB
+div15_4                           00000102
+div15_exit                        00000107
+dup                               
+flags                             00000007
+init                              00000029
+isr                               00000004
+isr_exit                          00000028
+isr_timer0                        0000001E
+isr_timer1                        0000000D
+light_segment                     000000A7
+main                              00000047
+msec4                             00000005
+over                              
+popw                              
+pushw                             
+pwm_loop                          00000070
+pwm_period                        00000006
+rst                               00000000
+secondes                          00000004
+self_test                         00000122
+servo_pos                         000000B8
+servo_test                        0000013A
+stack                             00000000
+start_msec4_tmr                   00000119
+start_timer                       00000109
+temp                              00000008
+test_tmr1                         00000008
+timeout                           0000007C
+MPASM 5.68                           MAT.ASM   9-3-2016  21:05:04         PAGE 29
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+timeset                           0000005D
+tone                              00000083
+tone_test                         00000135
+wait_loop                         00000062
+wait_timeout                      00000060
+
+Errors   :     0
+Warnings :     0 reported,     0 suppressed
+Messages :    49 reported,     0 suppressed
+
+

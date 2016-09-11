@@ -1,0 +1,130 @@
+MPLINK 5.08, LINKER
+Linker Map File - Created Sat Sep 03 21:05:05 2016
+
+                                 Section Info
+                  Section       Type    Address   Location Size(Bytes)
+                ---------  ---------  ---------  ---------  ---------
+                   .org_0       code   0x000000    program   0x000008
+                   .org_1       code   0x000004    program   0x000276
+                   .org_2       code   0x000700    program   0x00006c
+                   .cinit    romdata   0x000736    program   0x000004
+.config_8007_BUILD/DEFAULT/DEBUG/MAT.O       code   0x008007    program   0x000002
+.config_8008_BUILD/DEFAULT/DEBUG/MAT.O       code   0x008008    program   0x000002
+                   .udata      udata   0x000020       data   0x000016
+               .udata_shr      udata   0x000070       data   0x000009
+
+
+
+                              Program Memory Usage 
+                               Start         End      
+                           ---------   ---------      
+                            0x000000    0x00013e      
+                            0x000700    0x000737      
+                            0x008007    0x008008      
+            377 out of 2055 program addresses used, program memory utilization is 18%
+
+
+
+                              Symbols - Sorted by Name
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+                 LED_CONN   0x000700    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                    SCALE   0x000720    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+             _.org_1_0069   0x000069    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+             _.org_1_006B   0x00006b    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+             _.org_1_009F   0x00009f    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+             _.org_1_00D8   0x0000d8    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                    alarm   0x000082    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+            disable_timer   0x000024    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                disp_test   0x000126    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                    div15   0x0000e1    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                  div15_1   0x0000ed    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                  div15_2   0x0000f4    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                  div15_3   0x0000fb    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                  div15_4   0x000102    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+               div15_exit   0x000107    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                     init   0x000029    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                      isr   0x000004    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                 isr_exit   0x000028    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+               isr_timer0   0x00001e    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+               isr_timer1   0x00000d    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+            light_segment   0x0000a7    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                     main   0x000047    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                 pwm_loop   0x000070    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                      rst   0x000000    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                self_test   0x000122    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                servo_pos   0x0000b8    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+               servo_test   0x00013a    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+          start_msec4_tmr   0x000119    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+              start_timer   0x000109    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                test_tmr1   0x000008    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                  timeout   0x00007c    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                  timeset   0x00005d    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                     tone   0x000083    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                tone_test   0x000135    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                wait_loop   0x000062    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+             wait_timeout   0x000060    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                     ACAH   0x000071       data     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                     ACAL   0x000070       data     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                     ACBH   0x000073       data     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                     ACBL   0x000072       data     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                    flags   0x000077       data     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                    msec4   0x000075       data     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+               pwm_period   0x000076       data     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                 secondes   0x000074       data     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                    stack   0x000020       data     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                     temp   0x000078       data     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+
+
+
+                              Symbols - Sorted by Address
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+                      rst   0x000000    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                      isr   0x000004    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                test_tmr1   0x000008    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+               isr_timer1   0x00000d    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+               isr_timer0   0x00001e    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+            disable_timer   0x000024    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                 isr_exit   0x000028    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                     init   0x000029    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                     main   0x000047    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                  timeset   0x00005d    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+             wait_timeout   0x000060    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                wait_loop   0x000062    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+             _.org_1_0069   0x000069    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+             _.org_1_006B   0x00006b    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                 pwm_loop   0x000070    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                  timeout   0x00007c    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                    alarm   0x000082    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                     tone   0x000083    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+             _.org_1_009F   0x00009f    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+            light_segment   0x0000a7    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                servo_pos   0x0000b8    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+             _.org_1_00D8   0x0000d8    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                    div15   0x0000e1    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                  div15_1   0x0000ed    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                  div15_2   0x0000f4    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                  div15_3   0x0000fb    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                  div15_4   0x000102    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+               div15_exit   0x000107    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+              start_timer   0x000109    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+          start_msec4_tmr   0x000119    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                self_test   0x000122    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                disp_test   0x000126    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                tone_test   0x000135    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+               servo_test   0x00013a    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                 LED_CONN   0x000700    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                    SCALE   0x000720    program     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                    stack   0x000020       data     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                     ACAL   0x000070       data     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                     ACAH   0x000071       data     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                     ACBL   0x000072       data     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                     ACBH   0x000073       data     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                 secondes   0x000074       data     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                    msec4   0x000075       data     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+               pwm_period   0x000076       data     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                    flags   0x000077       data     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+                     temp   0x000078       data     static C:\Users\Jacques\Documents\GitHub\TeaDipMachine\MAT.X\mat.asm
+
+
