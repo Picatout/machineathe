@@ -323,7 +323,7 @@ main:
     call servo_pos
 ;   attend expiration de la minuterie
 ;   avec mise à jour de LED_BAR    
-    call timing_period
+    call infusion
 ;   minuterie  expirée soulève le sachet    
     movlw SERVO_POS_HAUT
     call servo_pos
@@ -385,7 +385,7 @@ beep:
 ;  attend expiration de la minuterie
 ;  mise à jour affichage
 #define RESTE ACAL    
-timing_period:
+infusion:
     movfw trempage
     skpnz
     bra timeout
