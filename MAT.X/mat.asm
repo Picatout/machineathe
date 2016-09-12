@@ -434,7 +434,7 @@ timeout:
 
 ; sonne l'alarme de fin de trempage    
 alarm:
-; initialition pointeur table SONATE
+; initialition pointeur table CE3K
     movlw high CE3K
     movwf FSR0H
     bsf FSR0H,7
