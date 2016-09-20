@@ -1,53 +1,53 @@
-Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 204 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 230 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 240 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 244 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 246 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 249 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 252 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 255 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 256 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 261 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 264 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 266 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 279 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 281 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 287 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 131 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[305] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 332 : Using default destination of 1 (file).
-Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 122 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 124 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 131 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[305] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 380 : Using default destination of 1 (file).
-Message[305] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 396 : Using default destination of 1 (file).
-Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 122 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 124 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[305] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 440 : Using default destination of 1 (file).
-Message[305] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 458 : Using default destination of 1 (file).
-Message[305] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 463 : Using default destination of 1 (file).
-Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 465 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[305] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 468 : Using default destination of 1 (file).
-Message[305] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 469 : Using default destination of 1 (file).
-Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 471 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 474 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 486 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 488 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[305] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 504 : Using default destination of 1 (file).
-Message[305] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 505 : Using default destination of 1 (file).
-Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 508 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[305] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 509 : Using default destination of 1 (file).
-Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 512 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 544 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[305] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 561 : Using default destination of 1 (file).
-Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 562 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 566 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 598 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 604 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[305] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 630 : Using default destination of 1 (file).
-Message[305] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 638 : Using default destination of 1 (file).
-Message[305] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 646 : Using default destination of 1 (file).
-Message[305] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 654 : Using default destination of 1 (file).
-Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 679 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 131 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 122 : Register in operand not in bank 0.  Ensure that bank bits are correct.
-Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\TEADIPMACHINE\MAT.X\MAT.ASM 124 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 231 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 257 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 267 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 271 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 273 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 276 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 279 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 282 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 283 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 288 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 291 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 293 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 306 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 308 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 314 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 158 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[305] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 359 : Using default destination of 1 (file).
+Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 149 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 151 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 158 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[305] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 408 : Using default destination of 1 (file).
+Message[305] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 424 : Using default destination of 1 (file).
+Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 149 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 151 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[305] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 468 : Using default destination of 1 (file).
+Message[305] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 486 : Using default destination of 1 (file).
+Message[305] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 491 : Using default destination of 1 (file).
+Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 493 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[305] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 496 : Using default destination of 1 (file).
+Message[305] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 497 : Using default destination of 1 (file).
+Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 499 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 502 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 514 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 516 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[305] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 532 : Using default destination of 1 (file).
+Message[305] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 533 : Using default destination of 1 (file).
+Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 536 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[305] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 537 : Using default destination of 1 (file).
+Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 540 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 572 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[305] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 589 : Using default destination of 1 (file).
+Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 590 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 594 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 626 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 632 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[305] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 658 : Using default destination of 1 (file).
+Message[305] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 666 : Using default destination of 1 (file).
+Message[305] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 674 : Using default destination of 1 (file).
+Message[305] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 682 : Using default destination of 1 (file).
+Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 707 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 158 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 149 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\JACQUES\DOCUMENTS\GITHUB\MACHINEATHE\MAT.X\MAT.ASM 151 : Register in operand not in bank 0.  Ensure that bank bits are correct.

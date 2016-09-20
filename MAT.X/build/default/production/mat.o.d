@@ -1,3 +1,3 @@
 build/default/production/mat.o:  \
-	C:/Users/Jacques/Documents/GitHub/TeaDipMachine/MAT.X/mat.asm  \
+	C:/Users/Jacques/Documents/GitHub/machineathe/MAT.X/mat.asm  \
 

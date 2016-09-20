@@ -5,3 +5,7 @@ Un bras mÃ©canique contrÃ´lÃ© par un servomoteur descend le sachet dans la tasse
 
 licence logicielle:  GPLV3
 autres documents: CC-BY-SA
+
+# mise à jour révision B
+
+mise à jour mineure. ajout table mélodie SOLDOMI  nouvelle séquence d'alarme.
