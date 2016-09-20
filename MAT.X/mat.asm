@@ -99,8 +99,10 @@
 ;indicateurs booléens 
 #define F_SEC    0 ; minuterie seconde 1=active, 0=inactive
 #define F_MSEC4  1 ; minuterie msec4 1=active, 0=inactive    
-    
-#define DEBUG  
+
+#define ALARM_TABLE  SOLDOMI    
+
+;#define DEBUG  
     
 ;;;;;;;;;;;;;;    
 ; constantes
@@ -330,7 +332,7 @@ main:
 ;   sonne l'alarme
     call alarm
 ; lorsque la séquence est terminée retourne en sommeil
-    goto main
+    bra main
     
     
 ;l'utilisateur doit ajuster le temps de trempage    
@@ -435,10 +437,10 @@ timeout:
 ; sonne l'alarme de fin de trempage    
 alarm:
 ; initialition pointeur table CE3K
-    movlw high CE3K
+    movlw high ALARM_TABLE
     movwf FSR0H
     bsf FSR0H,7
-    movlw low CE3K
+    movlw low ALARM_TABLE
     movwf FSR0L
     moviw FSR0++
     pushw ;nombre de notes à jouer
@@ -826,6 +828,14 @@ CE3K:
     dt .100,.0
     dt .200,.7
     dt .200,.7
+
+; 3 première note de la sonate au clair de lune
+; de Beethoven
+SOLDOMI:
+    dt .3 
+    dt .100,.7   ;sol
+    dt .100,.12  ;do
+    dt .100,.16  ;mi
     
     
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;    
