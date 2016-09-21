@@ -6,6 +6,9 @@ Un bras m√©canique contr√¥l√© par un servomoteur descend le sachet dans la tasse
 licence logicielle:  GPLV3
 autres documents: CC-BY-SA
 
-# mise ‡ jour rÈvision B
+# mise √† jour r√©vision B
 
-mise ‡ jour mineure. ajout table mÈlodie SOLDOMI  nouvelle sÈquence d'alarme.
+mise √† jour mineure. ajout table m√©lodie SOLDOMI  nouvelle s√©quence d'alarme.
+
+ajout d'un "eater egg" qui joue l'hymne √† la joie de Beethoven
+
