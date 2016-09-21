@@ -114,9 +114,9 @@
     constant TMR0_DLY=.256-.250      ; compte pour TMR0
     constant TMR1_DLY=.65536-.32000  ; compte pour TMR1H:TMR1L
     constant SERVO_PERIOD=.155       ; compte pour PR2
-    constant SERVO_POS_BAS=.53      ; compte pour CCP2RL:CCP2CON:DC2B
-    constant SERVO_NEUTRAL_PULSE=.47 ; "
-    constant SERVO_POS_HAUT=.59      ; "
+    constant SERVO_NEUTRAL_PULSE=.47 ; compte pour CCP2RL:CCP2CON:DC2B
+    constant SERVO_POS_BAS=.52       ; " 
+    constant SERVO_POS_HAUT=.60      ; "
     constant SERVO_DLY=.3  ; contrôle vitesse de rotation
 ;;;;;;;;;;;;;;    
 ; macros    
@@ -129,7 +129,10 @@ pushw macro ; empile WREG  ( -- n )
 popw macro ; dépile dans WREG ( n -- )
     moviw FSR1--
     endm
-
+drop macro ; jette le sommet de la pile
+    addfsr FSR1,-1&0x3f
+    endm
+    
 over macro ; copie 2ième élément de la pile  ( n2 n1 - n2 n1 n2)
     moviw (-1)&0x3f[FSR1]
     pushw
@@ -312,6 +315,15 @@ main:
     bcf INTCON, IOCIE
     banksel START_IOCN
     bcf START_IOCN,START_PIN
+    banksel TIMESET_PORT
+    btfsc TIMESET_PORT,TIMESET_PIN
+    bra eveil_normal
+;oeuf caché
+    call un_oeuf
+    bra main
+eveil_normal:  
+    movlw .15
+    movwf secondes
 ; tonalité d'éveil
     movlw .20
     pushw
@@ -337,11 +349,15 @@ main:
     
 ;l'utilisateur doit ajuster le temps de trempage    
 timeset:
-    clrf trempage
+    movfw secondes
+    movwf trempage
     banksel BTN_PORT
 ; attend qu'un bouton soit enfoncé.
 timeset_wait_btn:   
     display_enable
+    movfw trempage
+    call div15
+    call light_segment
     movlw .100
     call pause_msec
     movfw BTN_PORT
@@ -362,9 +378,6 @@ add_time:
     skpnc
     clrf trempage
     call beep
-    movfw trempage
-    call div15
-    call light_segment
     bra timeset_wait_btn
 timeset_exit:
     display_disable
@@ -764,7 +777,31 @@ servo_test:
     movlw SERVO_POS_HAUT
     call servo_pos
     return
-    
+
+; easter egg    
+un_oeuf:
+    movlw high HYMNE
+    movwf FSR0H
+    movlw low HYMNE
+    movwf FSR0L
+    moviw FSR0++
+    pushw
+oeuf_loop:
+    moviw FSR0++
+    pushw
+    moviw FSR0++
+    pushw
+    movfw FSR0L
+    movwf temp
+    call tone
+    movfw temp
+    movwf FSR0L
+    movlw .25
+    call pause_msec
+    decfsz INDF1
+    bra oeuf_loop
+    drop
+    return
     
 ;;;;;;;;;;;;;;;;
 ;  tables
@@ -836,8 +873,77 @@ SOLDOMI:
     dt .100,.7   ;sol
     dt .100,.12  ;do
     dt .100,.16  ;mi
-    
-    
+
+; hymne à la joie de Beethoven    
+HYMNE:
+    dt .62 ;nombre de notes
+; 1ière mesure
+    dt .100,.9   ; la
+    dt .100,.9   ; la 
+    dt .100,.10  ; si bémol
+    dt .100,.12  ; do
+    dt .100,.12  ; do
+    dt .100,.10  ; si bémol
+    dt .100,.9   ; la 
+    dt .100,.7   ; sol
+    dt .100,.5   ; fa
+    dt .100,.5   ; fa
+    dt .100,.7   ; sol
+    dt .100,.9   ; la 
+    dt .150,.7   ; sol
+    dt .50,.5   ; fa
+    dt .200,.5   ; fa
+;2ième mesure
+    dt .100,.9   ; la
+    dt .100,.9   ; la 
+    dt .100,.10  ; si bémol
+    dt .100,.12  ; do
+    dt .100,.12  ; do
+    dt .100,.10  ; si bémol
+    dt .100,.9   ; la 
+    dt .100,.7   ; sol
+    dt .100,.5   ; fa
+    dt .100,.5   ; fa
+    dt .100,.7   ; sol
+    dt .100,.9   ; la 
+    dt .150,.7   ; sol
+    dt .50,.5   ; fa
+    dt .200,.5   ; fa
+;3ième mesure    
+    dt .100,.7   ; sol
+    dt .100,.7   ; sol
+    dt .100,.9   ; la 
+    dt .100,.5   ; fa
+    dt .100,.7   ; sol
+    dt .50,.9   ; la 
+    dt .50,.10  ; si bémol
+    dt .100,.9   ; la 
+    dt .100,.5   ; fa
+    dt .100,.7   ; sol
+    dt .50,.9   ; la 
+    dt .50,.10  ; si bémol
+    dt .100,.9   ; la 
+    dt .100,.7   ; sol
+    dt .100,.5   ; fa
+    dt .100,.7   ; sol
+    dt .200,.0   ; do
+;4ième mesure
+    dt .100,.9   ; la
+    dt .100,.9   ; la 
+    dt .100,.10  ; si bémol
+    dt .100,.12  ; do
+    dt .100,.12  ; do
+    dt .100,.12  ; do
+    dt .100,.10  ; si bémol
+    dt .100,.9   ; la 
+    dt .100,.7   ; sol
+    dt .100,.5   ; fa
+    dt .100,.5   ; fa
+    dt .100,.7   ; sol
+    dt .150,.7   ; sol
+    dt .50,.5   ; fa
+    dt .200,.5   ; fa
+   
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;    
     end
     
