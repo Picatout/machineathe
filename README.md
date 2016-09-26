@@ -10,5 +10,8 @@ autres documents: CC-BY-SA
 
 mise à jour mineure. ajout table mélodie SOLDOMI  nouvelle séquence d'alarme.
 
-ajout d'un "eater egg" qui joue l'hymne à la joie de Beethoven
+ajout d'un "easter egg" qui joue l'hymne à la joie de Beethoven
 
+# mise à jour révision C
+
+L'easter egg est devenu une boite à musique avec 8 mélodies.
