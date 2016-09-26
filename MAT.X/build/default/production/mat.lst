@@ -1,4 +1,4 @@
-MPASM 5.68                           MAT.ASM   9-21-2016  19:33:58         PAGE  1
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE  1
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -57,7 +57,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00041 ;;;;;;;;;;;;;;
 8007   39E4           00042     __config  _CONFIG1, _FOSC_INTOSC & _WDTE_OFF & _PWRTE_OFF & _MCLRE_ON & _CP_OFF & _BOREN_OFF & _CLKO
                             UTEN_OFF
-MPASM 5.68                           MAT.ASM   9-21-2016  19:33:58         PAGE  2
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE  2
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -116,7 +116,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00092 #define C4      RC5
                       00093 #define C5      RC4
                       00094 #define C6      RC3
-MPASM 5.68                           MAT.ASM   9-21-2016  19:33:58         PAGE  3
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE  3
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -130,1064 +130,1702 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00100 #define F_SEC    0 ; minuterie seconde 1=active, 0=inactive
                       00101 #define F_MSEC4  1 ; minuterie msec4 1=active, 0=inactive    
                       00102 
-                      00103 #define ALARM_TABLE  SOLDOMI    
+                      00103 #define ALARM_TABLE  soldomi   
                       00104 
-                      00105 ;#define DEBUG  
+                      00105 #define TOS INDF1  ; top of stack
                       00106     
-                      00107 ;;;;;;;;;;;;;;    
-                      00108 ; constantes
-                      00109 ;;;;;;;;;;;;;;
-  000E                00110     constant F8MHZ=0xE ; valeur de OSCCON:IRCF pour 8Mhz
-  000C                00111     constant F2MHZ=0xC ; valeur de OSSCCON:IRCF pour 2Mhz
-  0EA6                00112     constant TIME_INCR = .15000/.4 ; incrément de 15 secondes
-  927C                00113     constant TIME_MAX = TIME_INCR*.10 ; 150 secondes
-  0006                00114     constant TMR0_DLY=.256-.250      ; compte pour TMR0
-  8300                00115     constant TMR1_DLY=.65536-.32000  ; compte pour TMR1H:TMR1L
-  009B                00116     constant SERVO_PERIOD=.155       ; compte pour PR2
-  002F                00117     constant SERVO_NEUTRAL_PULSE=.47 ; compte pour CCP2RL:CCP2CON:DC2B
-  0034                00118     constant SERVO_POS_BAS=.52       ; " 
-  003C                00119     constant SERVO_POS_HAUT=.60      ; "
-  0003                00120     constant SERVO_DLY=.3  ; contrôle vitesse de rotation
-                      00121 ;;;;;;;;;;;;;;    
-                      00122 ; macros    
-                      00123 ;;;;;;;;;;;;;;
-                      00124 ; macros pour la gestion de la pile des arguments
-                      00125 pushw macro ; empile WREG  ( -- n )
-                      00126     movwi ++FSR1
-                      00127     endm
-                      00128     
-                      00129 popw macro ; dépile dans WREG ( n -- )
-                      00130     moviw FSR1--
-                      00131     endm
-                      00132 drop macro ; jette le sommet de la pile
-                      00133     addfsr FSR1,-1&0x3f
-                      00134     endm
-                      00135     
-                      00136 over macro ; copie 2ième élément de la pile  ( n2 n1 - n2 n1 n2)
-                      00137     moviw (-1)&0x3f[FSR1]
-                      00138     pushw
+                      00107 ;#define DEBUG  
+                      00108     
+                      00109 ;;;;;;;;;;;;;;    
+                      00110 ; constantes
+                      00111 ;;;;;;;;;;;;;;
+  000E                00112     constant F8MHZ=0xE ; valeur de OSCCON:IRCF pour 8Mhz
+  000C                00113     constant F2MHZ=0xC ; valeur de OSSCCON:IRCF pour 2Mhz
+  0EA6                00114     constant TIME_INCR = .15000/.4 ; incrément de 15 secondes
+  927C                00115     constant TIME_MAX = TIME_INCR*.10 ; 150 secondes
+  0006                00116     constant TMR0_DLY=.256-.250      ; compte pour TMR0
+  8300                00117     constant TMR1_DLY=.65536-.32000  ; compte pour TMR1H:TMR1L
+  009B                00118     constant SERVO_PERIOD=.155       ; compte pour PR2
+  002F                00119     constant SERVO_NEUTRAL_PULSE=.47 ; compte pour CCP2RL:CCP2CON:DC2B
+  0034                00120     constant SERVO_POS_BAS=.52       ; " 
+  003C                00121     constant SERVO_POS_HAUT=.60      ; "
+  0003                00122     constant SERVO_DLY=.3  ; contrôle vitesse de rotation
+                      00123     
+  0008                00124     constant NOMBRE_MELODIES=.8 ; nombre de mélodies pour la boite à musique
+                      00125     
+                      00126 ;;;;;;;;;;;;;;    
+                      00127 ; macros    
+                      00128 ;;;;;;;;;;;;;;
+                      00129 ; macros pour la gestion de la pile des arguments
+                      00130 pushw macro ; empile WREG  ( -- n )
+                      00131     movwi ++FSR1
+                      00132     endm
+                      00133     
+                      00134 popw macro ; dépile dans WREG ( n -- )
+                      00135     moviw FSR1--
+                      00136     endm
+                      00137 drop macro ; jette le sommet de la pile
+                      00138     addfsr FSR1,0x3f
                       00139     endm
-                      00140  
-                      00141 dup macro ; copie TOS   ( n -- n n )
-                      00142     moviw 0[FSR1]
-                      00143     movwi ++FSR1
+                      00140     
+                      00141 over macro ; copie 2ième élément de la pile  ( n2 n1 - n2 n1 n2)
+                      00142     moviw (-1)&0x3f[FSR1]
+                      00143     pushw
                       00144     endm
-                      00145     
-                      00146     
-                      00147 ; toutes les pins du port DISP_PORT sont mises en mode entrée
-MPASM 5.68                           MAT.ASM   9-21-2016  19:33:58         PAGE  4
+                      00145  
+                      00146 dup macro ; copie TOS   ( n -- n n )
+                      00147     moviw 0[FSR1]
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE  4
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-                      00148 ; avec weak pullup actif
-                      00149 display_disable macro
-                      00150     movlw 0x3f
-                      00151     banksel DISP_TRIS
-                      00152     movwf DISP_TRIS
-                      00153     banksel DISP_WPU
-                      00154     movwf DISP_WPU
-                      00155     endm
-                      00156 
-                      00157 ; désactivation des weak pullup pour ne pas interférer avec
-                      00158 ; le charlieplexing.
-                      00159 display_enable macro
-                      00160     banksel DISP_WPU
-                      00161     clrf DISP_WPU
-                      00162     endm
-                      00163 
-                      00164 
-                      00165 ; le canal PWM de l'alarme est désactivé.
-                      00166 ; les broches TONE_PIN et ENV_PIN misent en mode entrée avec
-                      00167 ; weak pullup
-                      00168 alarm_disable macro
-                      00169     banksel TONE_TRIS ; tous les TRISx sont dans la même banque
-                      00170     bsf TONE_TRIS, TONE_PIN
-                      00171     bsf ENV_TRIS, ENV_PIN
-                      00172     banksel TONE_WPU  ; tous les WPUx sont dans la même banque
-                      00173     bsf TONE_WPU, TONE_PIN
-                      00174     bsf ENV_WPU, ENV_PIN
-                      00175     banksel TONE_CON
-                      00176     bcf TONE_CON, TONE_OE ; désactive sortie PWM
-                      00177     endm
-                      00178     
-                      00179 ;;;;;;;;;;;;;;
-                      00180 ; variables
-                      00181 ;;;;;;;;;;;;;;
-                      00182     udata
-0000                  00183 stack res 16
-                      00184  
-                      00185     udata_shr
-                      00186 ; 2 accumulateur 16 bits
-0000                  00187 ACAL res 1   ; accumulateur A octet poids faible
-0001                  00188 ACAH res 1  ; accumulateur A octet poids fort
-0002                  00189 ACBL res 1  ; accumulateur B  octet poids faible
-0003                  00190 ACBH res 1  ; accumulateur B  octet poids fort
-0004                  00191 trempage res 1 ; durée du trempage en secondes 
-0005                  00192 secondes res 1 ; compte à rebours secondes, interruption TIMER1
-0006                  00193 msec4 res 1 ; compte à rebours décrément 4 msec, interruption TIMER0
-0007                  00194 pwm_period res 1 ; période pour contrôler l'intensité du segment LED 
-0008                  00195 flags res 1; indicateurs booléens.
-0009                  00196 temp res 1 ; variable temporaire 
-000A                  00197 last_pos res 1 ; dernière commande envoyée au servo-moteur 
+                      00148     movwi ++FSR1
+                      00149     endm
+                      00150 
+                      00151 swap macro ; ( n1 n2 -- n2 n1 )
+                      00152    popw
+                      00153    xorwf INDF,F
+                      00154    xorwf INDF,W
+                      00155    xorwf INDF,F
+                      00156    pushw
+                      00157    endm
+                      00158     
+                      00159 ; toutes les pins du port DISP_PORT sont mises en mode entrée
+                      00160 ; avec weak pullup actif
+                      00161 display_disable macro
+                      00162     movlw 0x3f
+                      00163     banksel DISP_TRIS
+                      00164     movwf DISP_TRIS
+                      00165     banksel DISP_WPU
+                      00166     movwf DISP_WPU
+                      00167     endm
+                      00168 
+                      00169 ; désactivation des weak pullup pour ne pas interférer avec
+                      00170 ; le charlieplexing.
+                      00171 display_enable macro
+                      00172     banksel DISP_WPU
+                      00173     clrf DISP_WPU
+                      00174     endm
+                      00175 
+                      00176 
+                      00177 ; le canal PWM de l'alarme est désactivé.
+                      00178 ; les broches TONE_PIN et ENV_PIN misent en mode entrée avec
+                      00179 ; weak pullup
+                      00180 alarm_disable macro
+                      00181     banksel TONE_TRIS ; tous les TRISx sont dans la même banque
+                      00182     bsf TONE_TRIS, TONE_PIN
+                      00183     bsf ENV_TRIS, ENV_PIN
+                      00184     banksel TONE_WPU  ; tous les WPUx sont dans la même banque
+                      00185     bsf TONE_WPU, TONE_PIN
+                      00186     bsf ENV_WPU, ENV_PIN
+                      00187     banksel TONE_CON
+                      00188     bcf TONE_CON, TONE_OE ; désactive sortie PWM
+                      00189     endm
+                      00190 
+                      00191 case macro n, addr
+                      00192     xorlw n
+                      00193     skpnz
+                      00194     bra addr
+                      00195     xorlw n
+                      00196     endm
+                      00197     
                       00198 ;;;;;;;;;;;;;;
-                      00199 ; code
+                      00199 ; variables
                       00200 ;;;;;;;;;;;;;;
-MPASM 5.68                           MAT.ASM   9-21-2016  19:33:58         PAGE  5
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE  5
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-                      00201     code 
-                      00202     org 0
-                      00203 ; vecteur reset    
-0000                  00204 rst:
-0000   2???           00205     goto init
-0001   0000           00206     nop
-0002   0000           00207     nop
-0003   0000           00208     nop
-                      00209 ; service des interruptions    
-                      00210     org 4
-0004                  00211 isr:
-0004   1E8B           00212     btfss INTCON, T0IE
-0005   3???           00213     bra test_tmr1
-0006   190B           00214     btfsc INTCON, T0IF
-0007   3???           00215     bra isr_timer0
-0008                  00216 test_tmr1:
-0008   1F0B           00217     btfss INTCON, PEIE
-0009   3???           00218     bra isr_exit ; interruption non traitée.
-000A   0020           00219     banksel PIR1
-000B   1C11           00220     btfss PIR1, TMR1IF
-000C   3???           00221     bra isr_exit ; interuption non traité
-000D                  00222 isr_timer1: ; répond à l'interuption sur TIMER1, intervalle 1 secondes
-000D   1011           00223     bcf PIR1, TMR1IF
-000E   0020           00224     banksel TMR1L
-000F   3000           00225     movlw low TMR1_DLY
-0010   0096           00226     movwf TMR1L
-0011   3083           00227     movlw high TMR1_DLY
-0012   0097           00228     movwf TMR1H
-0013   0B??           00229     decfsz secondes,F
-0014   3???           00230     bra isr_exit
-                      00231 ; minuterie expiré désactive interuption
-0015   1000           00232     bcf flags, F_SEC
-0016   0021           00233     banksel PIE1
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0017   1011           00234     bcf PIE1,TMR1IE
-0018   130B           00235     bcf INTCON, PEIE
-0019   1E8B           00236     btfss INTCON, T0IE ; déscative toutes interruption
-001A   0020           00237     banksel T1CON
-001B   1018           00238     bcf T1CON, TMR1ON  ; arrête TIMER1
-001C   138B           00239     bcf INTCON, GIE    ; si TIMER0 n'est pas en cours d'utilisation
-001D   3???           00240     bra isr_exit
-001E                  00241 isr_timer0: ; répond à l'innterruption sur TIMER0, intervalle 4 msec.   
-001E   0020           00242     banksel TMR0
-001F   3006           00243     movlw TMR0_DLY
-0020   0095           00244     movwf TMR0
-0021   110B           00245     bcf INTCON,T0IF
-0022   0B??           00246     decfsz msec4,F
-0023   3???           00247     bra isr_exit
-0024                  00248 disable_timer:    
-0024   1080           00249     bcf flags, F_MSEC4
-0025   128B           00250     bcf INTCON,T0IE
-0026   1F0B           00251     btfss INTCON, PEIE
-0027   138B           00252     bcf INTCON, GIE   ;si TIMER1 n'est pas utilisé présentiment
-MPASM 5.68                           MAT.ASM   9-21-2016  19:33:58         PAGE  6
+                      00201     udata
+0000                  00202 stack res 16
+                      00203  
+                      00204     udata_shr
+                      00205 ; 2 accumulateur 16 bits
+0000                  00206 ACAL res 1   ; accumulateur A octet poids faible
+0001                  00207 ACAH res 1  ; accumulateur A octet poids fort
+0002                  00208 ACBL res 1  ; accumulateur B  octet poids faible
+0003                  00209 ACBH res 1  ; accumulateur B  octet poids fort
+0004                  00210 trempage res 1 ; durée du trempage en secondes 
+0005                  00211 secondes res 1 ; compte à rebours secondes, interruption TIMER1
+0006                  00212 msec4 res 1 ; compte à rebours décrément 4 msec, interruption TIMER0
+0007                  00213 pwm_period res 1 ; période pour contrôler l'intensité du segment LED 
+0008                  00214 flags res 1; indicateurs booléens.
+0009                  00215 temp res 1 ; variable temporaire 
+000A                  00216 last_pos res 1 ; dernière commande envoyée au servo-moteur 
+000B                  00217 rseed res 3  ; graine générateur pseudo-hasard
+000E                  00218 musique res 1 ; indique quelle mélodie jouer
+                      00219  
+                      00220 ;;;;;;;;;;;;;;
+                      00221 ; code
+                      00222 ;;;;;;;;;;;;;;
+                      00223     code 
+                      00224     org 0
+                      00225 ; vecteur reset    
+0000                  00226 rst:
+0000   2???           00227     goto init
+0001   0000           00228     nop
+0002   0000           00229     nop
+0003   0000           00230     nop
+                      00231 ; service des interruptions    
+                      00232     org 4
+0004                  00233 isr:
+0004   1E8B           00234     btfss INTCON, T0IE
+0005   3???           00235     bra test_tmr1
+0006   190B           00236     btfsc INTCON, T0IF
+0007   3???           00237     bra isr_timer0
+0008                  00238 test_tmr1:
+0008   1F0B           00239     btfss INTCON, PEIE
+0009   3???           00240     bra isr_exit ; interruption non traitée.
+000A   0020           00241     banksel PIR1
+000B   1C11           00242     btfss PIR1, TMR1IF
+000C   3???           00243     bra isr_exit ; interuption non traité
+000D                  00244 isr_timer1: ; répond à l'interuption sur TIMER1, intervalle 1 secondes
+000D   1011           00245     bcf PIR1, TMR1IF
+000E   0020           00246     banksel TMR1L
+000F   3000           00247     movlw low TMR1_DLY
+0010   0096           00248     movwf TMR1L
+0011   3083           00249     movlw high TMR1_DLY
+0012   0097           00250     movwf TMR1H
+0013   0B??           00251     decfsz secondes,F
+0014   3???           00252     bra isr_exit
+                      00253 ; minuterie expiré désactive interuption
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE  6
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-0028                  00253 isr_exit:    
-0028   0009           00254     retfie
-                      00255     
-0029                  00256 init:
-                      00257 ; fréquence clock à 8Mhz
-0029   0021           00258     banksel OSCCON
-002A   3070           00259     movlw F8MHZ<<IRCF0  ; Fosc 8Mhz
+0015   1000           00254     bcf flags, F_SEC
+0016   0021           00255     banksel PIE1
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-002B   0099           00260     movwf OSCCON
-                      00261 ; initialisation pointeur de la pile des arguments
-002C   30??           00262     movlw high stack
-002D   0087           00263     movwf FSR1H
-002E   30??           00264     movlw low stack
-002F   0086           00265     movwf FSR1L
-                      00266 ; assignation des périphériques au broches
-                      00267 ; PWM1 sur TONE_PIN   
-0030   003D           00268     banksel TONE_PIN_PPS
-0031   300C           00269     movlw TONE_OUT_FN  ; fonction PWM1 
+0017   1011           00256     bcf PIE1,TMR1IE
+0018   130B           00257     bcf INTCON, PEIE
+0019   1E8B           00258     btfss INTCON, T0IE ; déscative toutes interruption
+001A   0020           00259     banksel T1CON
+001B   1018           00260     bcf T1CON, TMR1ON  ; arrête TIMER1
+001C   138B           00261     bcf INTCON, GIE    ; si TIMER0 n'est pas en cours d'utilisation
+001D   3???           00262     bra isr_exit
+001E                  00263 isr_timer0: ; répond à l'innterruption sur TIMER0, intervalle 4 msec.   
+001E   0020           00264     banksel TMR0
+001F   3006           00265     movlw TMR0_DLY
+0020   0095           00266     movwf TMR0
+0021   110B           00267     bcf INTCON,T0IF
+0022   0B??           00268     decfsz msec4,F
+0023   3???           00269     bra isr_exit
+0024                  00270 disable_timer:    
+0024   1080           00271     bcf flags, F_MSEC4
+0025   128B           00272     bcf INTCON,T0IE
+0026   1F0B           00273     btfss INTCON, PEIE
+0027   138B           00274     bcf INTCON, GIE   ;si TIMER1 n'est pas utilisé présentiment
+0028                  00275 isr_exit:    
+0028   0009           00276     retfie
+                      00277     
+0029                  00278 init:
+                      00279 ; fréquence clock à 8Mhz
+0029   0021           00280     banksel OSCCON
+002A   3070           00281     movlw F8MHZ<<IRCF0  ; Fosc 8Mhz
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0032   0091           00270     movwf TONE_PIN_PPS   
-                      00271 ; PWM2 sur SERVO_PIN
-0033   003D           00272     banksel SERVO_PIN_PPS
-0034   300D           00273     movlw SERVO_OUT_FN  ; fonction PWM2
+002B   0099           00282     movwf OSCCON
+                      00283 ; initialisation pointeur de la pile des arguments
+002C   30??           00284     movlw high stack
+002D   0087           00285     movwf FSR1H
+002E   30??           00286     movlw low stack
+002F   0086           00287     movwf FSR1L
+                      00288 ; assignation des périphériques au broches
+                      00289 ; PWM1 sur TONE_PIN   
+0030   003D           00290     banksel TONE_PIN_PPS
+0031   300C           00291     movlw TONE_OUT_FN  ; fonction PWM1 
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0035   0092           00274     movwf SERVO_PIN_PPS
-                      00275 ; veroullage PPS
+0032   0091           00292     movwf TONE_PIN_PPS   
+                      00293 ; PWM2 sur SERVO_PIN
+0033   003D           00294     banksel SERVO_PIN_PPS
+0034   300D           00295     movlw SERVO_OUT_FN  ; fonction PWM2
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0036   140F           00276     bsf PPSLOCK, 0
-                      00277 ; activation low power sleep mode
-0037   0023           00278     banksel VREGCON
+0035   0092           00296     movwf SERVO_PIN_PPS
+                      00297 ; veroullage PPS
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0038   1497           00279     bsf VREGCON, VREGPM
-                      00280 ; enlever weak pullup sur broche sortie TONE
-0039   0024           00281     banksel TONE_WPU
+0036   140F           00298     bsf PPSLOCK, 0
+                      00299 ; activation low power sleep mode
+0037   0023           00300     banksel VREGCON
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-003A   108C           00282     bcf TONE_WPU,TONE_PIN
-                      00283 ; entrée analogique non utilisée
-003B   0023           00284     banksel ANSELA
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE  7
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0038   1497           00301     bsf VREGCON, VREGPM
+                      00302 ; enlever weak pullup sur broche sortie TONE
+0039   0024           00303     banksel TONE_WPU
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-003C   018C           00285     clrf ANSELA
+003A   108C           00304     bcf TONE_WPU,TONE_PIN
+                      00305 ; entrée analogique non utilisée
+003B   0023           00306     banksel ANSELA
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-003D   018E           00286     clrf ANSELC
-                      00287 ;    display_disable
-                      00288 ; configuration OPTION_REG TIMER0 prescale 64
-003E   0021           00289     banksel OPTION_REG
-003F   3004           00290     movlw 4 ; TIMER0 préscale 1:32
+003C   018C           00307     clrf ANSELA
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0040   0095           00291     movwf OPTION_REG
-                      00292 ; met SERVO_PIN en sortie bas voltage
-0041   0021           00293     banksel SERVO_TRIS
+003D   018E           00308     clrf ANSELC
+                      00309 ;    display_disable
+                      00310 ; configuration OPTION_REG TIMER0 prescale 64
+003E   0021           00311     banksel OPTION_REG
+003F   3004           00312     movlw 4 ; TIMER0 préscale 1:32
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0042   110C           00294     bcf SERVO_TRIS, SERVO_PIN
-0043   0022           00295     banksel SERVO_LAT
-MPASM 5.68                           MAT.ASM   9-21-2016  19:33:58         PAGE  7
+0040   0095           00313     movwf OPTION_REG
+                      00314 ; met SERVO_PIN en sortie bas voltage
+0041   0021           00315     banksel SERVO_TRIS
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0042   110C           00316     bcf SERVO_TRIS, SERVO_PIN
+0043   0022           00317     banksel SERVO_LAT
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0044   110C           00318     bcf SERVO_LAT, SERVO_PIN
+                      00319 ; configuration de la sortie pour son
+0045   0021           00320     banksel TONE_TRIS
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0046   108C           00321     bcf TONE_TRIS, TONE_PIN ; broche en mode sortie
+                      00322 ;variables à zéro
+0047   01??           00323     clrf flags 
+0048   01??           00324     clrf secondes
+0049   01??           00325     clrf msec4
+004A   01??           00326     clrf musique
+                      00327 ; initialise rseed    
+004B   3003           00328     movlw 3
+004C   00??           00329     movwf rseed
+Message[305]: Using default destination of 1 (file).
+004D   3589           00330     lslf WREG
+004E   00??           00331     movwf rseed+1
+Message[305]: Using default destination of 1 (file).
+004F   3589           00332     lslf WREG
+0050   00??           00333     movwf rseed+2
+                      00334     
+0051   303C           00335     movlw SERVO_POS_HAUT
+0052   00??           00336     movwf last_pos
+0053   2???           00337     call self_test
+0054                  00338 main:
+0054   2???           00339     call rand
+                      00340 ; activation interruption sur bouton START enfoncé
+                      00341 ; ceci pour permettre la sortie du mode SLEEP en enfoncant ce bouton    
+0055   0027           00342     banksel START_IOCF
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0056   1293           00343     bcf START_IOCF, START_PIN ; remise à zéro indicateur interruption
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE  8
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0057   0027           00344     banksel START_IOCN
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0058   1692           00345     bsf START_IOCN, START_PIN ;déclenchement interruption sur transition négative
+0059   158B           00346     bsf INTCON, IOCIE  ; activation interruption sur transition broche.
+005A   0063           00347     sleep
+                      00348 ;désactivation IOCN
+005B   118B           00349     bcf INTCON, IOCIE
+005C   0027           00350     banksel START_IOCN
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+005D   1292           00351     bcf START_IOCN,START_PIN
+005E   0020           00352     banksel TIMESET_PORT
+005F   1A0C           00353     btfsc TIMESET_PORT,TIMESET_PIN
+0060   3???           00354     bra eveil_normal
+                      00355 ;fonction cachée
+0061   2???           00356     call boite_a_musique
+0062   3???           00357     bra main
+0063                  00358 eveil_normal:  
+0063   300F           00359     movlw .15
+0064   00??           00360     movwf secondes
+                      00361 ; tonalité d'éveil
+0065   3014           00362     movlw .20
+                      00363     pushw
+0066   001C               M     movwi ++FSR1
+0067   3001           00364     movlw 1
+                      00365     pushw
+0068   001C               M     movwi ++FSR1
+0069   2???           00366     call tone
+                      00367 ; ajustement du temps
+006A   2???           00368     call timeset
+                      00369 ; descente du sachet dans la tasse
+006B   3034           00370     movlw SERVO_POS_BAS 
+006C   2???           00371     call servo_pos
+                      00372 ;   attend expiration de la minuterie
+                      00373 ;   avec mise à jour de LED_BAR    
+006D   2???           00374     call infusion
+                      00375 ;   minuterie  expirée soulève le sachet    
+006E   303C           00376     movlw SERVO_POS_HAUT
+006F   2???           00377     call servo_pos
+                      00378 ;   sonne l'alarme
+0070   2???           00379     call alarm
+                      00380 ; lorsque la séquence est terminée retourne en sommeil
+0071   3???           00381     bra main
+                      00382     
+                      00383     
+                      00384 ;l'utilisateur doit ajuster le temps de trempage    
+0072                  00385 timeset:
+0072   08??           00386     movfw secondes
+0073   00??           00387     movwf trempage
+0074   0020           00388     banksel BTN_PORT
+                      00389 ; attend qu'un bouton soit enfoncé.
+0075                  00390 timeset_wait_btn:   
+                      00391     display_enable
+0075   0024               M     banksel DISP_WPU
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE  9
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0044   110C           00296     bcf SERVO_LAT, SERVO_PIN
-                      00297 ;variables à zéro
-0045   01??           00298     clrf flags 
-0046   01??           00299     clrf secondes
-0047   01??           00300     clrf msec4
-0048   303C           00301     movlw SERVO_POS_HAUT
-0049   00??           00302     movwf last_pos
-004A   2???           00303     call self_test
-                      00304 
-004B                  00305 main:
-                      00306 ; activation interruption sur bouton START enfoncé
-                      00307 ; ceci pour permettre la sortie du mode SLEEP en enfoncant ce bouton    
-004B   0027           00308     banksel START_IOCF
+0076   018E               M     clrf DISP_WPU
+0077   08??           00392     movfw trempage
+0078   2???           00393     call div15
+0079   2???           00394     call light_segment
+007A   3064           00395     movlw .100
+007B   2???           00396     call pause_msec
+007C   080C           00397     movfw BTN_PORT
+007D   3930           00398     andlw (1<<START_PIN)|(1<<TIMESET_PIN)
+007E   3A30           00399     xorlw (1<<START_PIN)|(1<<TIMESET_PIN)
+007F   1903           00400     skpnz
+0080   3???           00401     bra $-4
+0081   1A09           00402     btfsc WREG,TIMESET_PIN
+0082   3???           00403     bra add_time
+0083   1A89           00404     btfsc WREG, START_PIN
+0084   3???           00405     bra timeset_exit
+0085   3???           00406     bra timeset_wait_btn
+0086                  00407 add_time:
+0086   300F           00408     movlw .15
+Message[305]: Using default destination of 1 (file).
+0087   07??           00409     addwf trempage
+0088   3097           00410     movlw .151
+0089   02??           00411     subwf trempage,W
+008A   1803           00412     skpnc
+008B   01??           00413     clrf trempage
+008C   2???           00414     call beep
+008D   3???           00415     bra timeset_wait_btn
+008E                  00416 timeset_exit:
+                      00417     display_disable
+008E   303F               M     movlw 0x3f
+008F   0021               M     banksel DISP_TRIS
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-004C   1293           00309     bcf START_IOCF, START_PIN ; remise à zéro indicateur interruption
-004D   0027           00310     banksel START_IOCN
+0090   008E               M     movwf DISP_TRIS
+0091   0024               M     banksel DISP_WPU
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-004E   1692           00311     bsf START_IOCN, START_PIN ;déclenchement interruption sur transition négative
-004F   158B           00312     bsf INTCON, IOCIE  ; activation interruption sur transition broche.
-0050   0063           00313     sleep
-                      00314 ;désactivation IOCN
-0051   118B           00315     bcf INTCON, IOCIE
-0052   0027           00316     banksel START_IOCN
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0053   1292           00317     bcf START_IOCN,START_PIN
-0054   0020           00318     banksel TIMESET_PORT
-0055   1A0C           00319     btfsc TIMESET_PORT,TIMESET_PIN
-0056   3???           00320     bra eveil_normal
-                      00321 ;oeuf caché
-0057   2???           00322     call un_oeuf
-0058   3???           00323     bra main
-0059                  00324 eveil_normal:  
-0059   300F           00325     movlw .15
-005A   00??           00326     movwf secondes
-                      00327 ; tonalité d'éveil
-005B   3014           00328     movlw .20
-                      00329     pushw
-005C   001C               M     movwi ++FSR1
-005D   3001           00330     movlw 1
-                      00331     pushw
-005E   001C               M     movwi ++FSR1
-005F   2???           00332     call tone
-                      00333 ; ajustement du temps
-0060   2???           00334     call timeset
-                      00335 ; descente du sachet dans la tasse
-0061   3034           00336     movlw SERVO_POS_BAS 
-0062   2???           00337     call servo_pos
-                      00338 ;   attend expiration de la minuterie
-                      00339 ;   avec mise à jour de LED_BAR    
-0063   2???           00340     call infusion
-                      00341 ;   minuterie  expirée soulève le sachet    
-0064   303C           00342     movlw SERVO_POS_HAUT
-MPASM 5.68                           MAT.ASM   9-21-2016  19:33:58         PAGE  8
+0092   008E               M     movwf DISP_WPU
+0093   2???           00418     call beep
+                      00419 ; attend relâchement du bouton    
+0094   0020           00420     banksel BTN_PORT
+0095   1E8C           00421     btfss BTN_PORT, START_PIN
+0096   3???           00422     bra $-1
+0097   0008           00423     return
+                      00424 
+                      00425 ; son court    
+0098                  00426 beep:
+0098   300A           00427     movlw .10
+                      00428     pushw
+0099   001C               M     movwi ++FSR1
+009A   0103           00429     clrw
+                      00430     pushw
+009B   001C               M     movwi ++FSR1
+009C   2???           00431     call tone
+009D   0008           00432     return
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 10
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-0065   2???           00343     call servo_pos
-                      00344 ;   sonne l'alarme
-0066   2???           00345     call alarm
-                      00346 ; lorsque la séquence est terminée retourne en sommeil
-0067   3???           00347     bra main
-                      00348     
-                      00349     
-                      00350 ;l'utilisateur doit ajuster le temps de trempage    
-0068                  00351 timeset:
-0068   08??           00352     movfw secondes
-0069   00??           00353     movwf trempage
-006A   0020           00354     banksel BTN_PORT
-                      00355 ; attend qu'un bouton soit enfoncé.
-006B                  00356 timeset_wait_btn:   
-                      00357     display_enable
-006B   0024               M     banksel DISP_WPU
+                      00433     
+                      00434 ;  attend expiration de la minuterie
+                      00435 ;  mise à jour affichage
+                      00436 #define RESTE ACAL    
+009E                  00437 infusion:
+009E   08??           00438     movfw trempage
+009F   1903           00439     skpnz
+00A0   3???           00440     bra timeout
+00A1   2???           00441     call start_timer
+                      00442     display_enable
+00A2   0024               M     banksel DISP_WPU
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-006C   018E               M     clrf DISP_WPU
-006D   08??           00358     movfw trempage
-006E   2???           00359     call div15
-006F   2???           00360     call light_segment
-0070   3064           00361     movlw .100
-0071   2???           00362     call pause_msec
-0072   080C           00363     movfw BTN_PORT
-0073   3930           00364     andlw (1<<START_PIN)|(1<<TIMESET_PIN)
-0074   3A30           00365     xorlw (1<<START_PIN)|(1<<TIMESET_PIN)
-0075   1903           00366     skpnz
-0076   3???           00367     bra $-4
-0077   1A09           00368     btfsc WREG,TIMESET_PIN
-0078   3???           00369     bra add_time
-0079   1A89           00370     btfsc WREG, START_PIN
-007A   3???           00371     bra timeset_exit
-007B   3???           00372     bra timeset_wait_btn
-007C                  00373 add_time:
-007C   300F           00374     movlw .15
+00A3   018E               M     clrf DISP_WPU
+00A4                  00443 wait_loop:
+00A4   0020           00444     banksel BTN_PORT
+00A5   1E8C           00445     btfss BTN_PORT, START_PIN ; cancellation si bouton enfoncé
+00A6   3???           00446     bra cancellation
+00A7   1C00           00447     btfss flags, F_SEC
+00A8   3???           00448     bra timeout
+00A9   08??           00449     movfw secondes
+00AA   2???           00450     call div15
+00AB   00??           00451     movwf temp
+00AC   08??           00452     movf RESTE,F
+00AD   1903           00453     skpnz
+00AE   3???           00454     bra $+3
 Message[305]: Using default destination of 1 (file).
-007D   07??           00375     addwf trempage
-007E   3097           00376     movlw .151
-007F   02??           00377     subwf trempage,W
-0080   1803           00378     skpnc
-0081   01??           00379     clrf trempage
-0082   2???           00380     call beep
-0083   3???           00381     bra timeset_wait_btn
-0084                  00382 timeset_exit:
-                      00383     display_disable
-0084   303F               M     movlw 0x3f
-0085   0021               M     banksel DISP_TRIS
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0086   008E               M     movwf DISP_TRIS
-0087   0024               M     banksel DISP_WPU
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0088   008E               M     movwf DISP_WPU
-0089   2???           00384     call beep
-MPASM 5.68                           MAT.ASM   9-21-2016  19:33:58         PAGE  9
+00AF   0A??           00455     incf temp
+00B0   3???           00456     bra $+3
+00B1   300F           00457     movlw 0xf
+00B2   00??           00458     movwf RESTE
+                      00459 ; initialise période pour PWM intensité LED
+00B3   300F           00460     movlw 0xf
+00B4   00??           00461     movwf pwm_period
+00B5                  00462 pwm_loop:
+00B5   08??           00463     movf RESTE,F
+00B6   1903           00464     skpnz
+00B7   01??           00465     clrf temp
+00B8   08??           00466     movfw temp
+00B9   2???           00467     call light_segment
+00BA   08??           00468     movf RESTE,F
+00BB   1D03           00469     skpz
+00BC   03??           00470     decf RESTE,F
+Message[305]: Using default destination of 1 (file).
+00BD   03??           00471     decf pwm_period
+00BE   1D03           00472     skpz
+00BF   3???           00473     bra pwm_loop
+00C0   3???           00474     bra wait_loop
+00C1                  00475 cancellation:
+00C1   1000           00476     bcf flags, F_SEC
+00C2   128B           00477     bcf INTCON, T0IE
+00C3   01??           00478     clrf secondes
+00C4                  00479 timeout:    
+                      00480     display_disable
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 11
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-                      00385 ; attend relâchement du bouton    
-008A   0020           00386     banksel BTN_PORT
-008B   1E8C           00387     btfss BTN_PORT, START_PIN
-008C   3???           00388     bra $-1
-008D   0008           00389     return
-                      00390 
-                      00391 ; son court    
-008E                  00392 beep:
-008E   300A           00393     movlw .10
-                      00394     pushw
-008F   001C               M     movwi ++FSR1
-0090   0103           00395     clrw
-                      00396     pushw
-0091   001C               M     movwi ++FSR1
-0092   2???           00397     call tone
-0093   0008           00398     return
-                      00399     
-                      00400 ;  attend expiration de la minuterie
-                      00401 ;  mise à jour affichage
-                      00402 #define RESTE ACAL    
-0094                  00403 infusion:
-0094   08??           00404     movfw trempage
-0095   1903           00405     skpnz
-0096   3???           00406     bra timeout
-0097   2???           00407     call start_timer
-                      00408     display_enable
-0098   0024               M     banksel DISP_WPU
+00C4   303F               M     movlw 0x3f
+00C5   0021               M     banksel DISP_TRIS
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0099   018E               M     clrf DISP_WPU
-009A                  00409 wait_loop:
-009A   0020           00410     banksel BTN_PORT
-009B   1E8C           00411     btfss BTN_PORT, START_PIN ; cancellation si bouton enfoncé
-009C   3???           00412     bra cancellation
-009D   1C00           00413     btfss flags, F_SEC
-009E   3???           00414     bra timeout
-009F   08??           00415     movfw secondes
-00A0   2???           00416     call div15
-00A1   00??           00417     movwf temp
-00A2   08??           00418     movf RESTE,F
-00A3   1903           00419     skpnz
-00A4   3???           00420     bra $+3
+00C6   008E               M     movwf DISP_TRIS
+00C7   0024               M     banksel DISP_WPU
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+00C8   008E               M     movwf DISP_WPU
+00C9   0008           00481     return
+                      00482 
+                      00483 
+                      00484 ; sonne l'alarme de fin de trempage    
+00CA                  00485 alarm:
+                      00486 ; initialition pointeur table CE3K
+00CA   30??           00487     movlw high ALARM_TABLE
+00CB   0085           00488     movwf FSR0H
+                      00489 ;    bsf FSR0H,7
+00CC   30??           00490     movlw low ALARM_TABLE
+00CD   0084           00491     movwf FSR0L
+00CE   0012           00492     moviw FSR0++
+                      00493     pushw ;nombre de notes à jouer
+00CF   001C               M     movwi ++FSR1
+                      00494 ;sauvegarde du pointeur
+00D0   0804           00495     movfw FSR0L
+00D1   00??           00496     movwf ACAL
+00D2   0805           00497     movfw FSR0H
+00D3   00??           00498     movwf ACAH
+00D4                  00499 alarm_loop:
+                      00500 ;restauration du pointeur    
+00D4   08??           00501     movfw ACAL
+00D5   0084           00502     movwf FSR0L
+00D6   08??           00503     movfw ACAH
+00D7   0085           00504     movwf FSR0H
+00D8   0012           00505     moviw FSR0++
+                      00506     pushw  ; durée note
+00D9   001C               M     movwi ++FSR1
+00DA   0012           00507     moviw FSR0++
+                      00508     pushw  ; indice note
+00DB   001C               M     movwi ++FSR1
+                      00509 ;sauvegarde du pointeur    
+00DC   0804           00510     movfw FSR0L
+00DD   00??           00511     movwf ACAL
+00DE   0805           00512     movfw FSR0H
+00DF   00??           00513     movwf ACAH
+00E0   2???           00514     call tone
 Message[305]: Using default destination of 1 (file).
-00A5   0A??           00421     incf temp
-00A6   3???           00422     bra $+3
-00A7   300F           00423     movlw 0xf
-00A8   00??           00424     movwf RESTE
-                      00425 ; initialise période pour PWM intensité LED
-00A9   300F           00426     movlw 0xf
-00AA   00??           00427     movwf pwm_period
-00AB                  00428 pwm_loop:
-00AB   08??           00429     movf RESTE,F
-00AC   1903           00430     skpnz
-00AD   01??           00431     clrf temp
-MPASM 5.68                           MAT.ASM   9-21-2016  19:33:58         PAGE 10
+00E1   0B81           00515     decfsz TOS
+00E2   3???           00516     bra alarm_loop
+                      00517     popw
+00E3   0017               M     moviw FSR1--
+00E4   0008           00518     return
+                      00519 
+                      00520 ; fait entendre une tonalité
+                      00521 ; entrée:  pile ( d n -- )
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 12
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-00AE   08??           00432     movfw temp
-00AF   2???           00433     call light_segment
-00B0   08??           00434     movf RESTE,F
-00B1   1D03           00435     skpz
-00B2   03??           00436     decf RESTE,F
+                      00522 ;    d -> durée en multiple de 4 msec.
+                      00523 ;    n -> indice de la note dans la table SCALE    
+00E5                  00524 tone:
+                      00525 ; prépare FSR0 pour accéder table SCALE
+00E5   30??           00526     movlw high SCALE
+00E6   0085           00527     movwf FSR0H
+                      00528 ;    bsf FSR0H,7
+00E7   30??           00529     movlw low SCALE
+00E8   0084           00530     movwf FSR0L
+                      00531 ;ajoute l'indice de la note à FSR0    
+                      00532     popw
+00E9   0017               M     moviw FSR1--
 Message[305]: Using default destination of 1 (file).
-00B3   03??           00437     decf pwm_period
-00B4   1D03           00438     skpz
-00B5   3???           00439     bra pwm_loop
-00B6   3???           00440     bra wait_loop
-00B7                  00441 cancellation:
-00B7   1000           00442     bcf flags, F_SEC
-00B8   128B           00443     bcf INTCON, T0IE
-00B9   01??           00444     clrf secondes
-00BA                  00445 timeout:    
-                      00446     display_disable
-00BA   303F               M     movlw 0x3f
-00BB   0021               M     banksel DISP_TRIS
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-00BC   008E               M     movwf DISP_TRIS
-00BD   0024               M     banksel DISP_WPU
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-00BE   008E               M     movwf DISP_WPU
-00BF   0008           00447     return
-                      00448 
-                      00449 
-                      00450 ; sonne l'alarme de fin de trempage    
-00C0                  00451 alarm:
-                      00452 ; initialition pointeur table CE3K
-00C0   30??           00453     movlw high ALARM_TABLE
-00C1   0085           00454     movwf FSR0H
-00C2   1785           00455     bsf FSR0H,7
-00C3   30??           00456     movlw low ALARM_TABLE
-00C4   0084           00457     movwf FSR0L
-00C5   0012           00458     moviw FSR0++
-                      00459     pushw ;nombre de notes à jouer
-00C6   001C               M     movwi ++FSR1
-                      00460 ;sauvegarde du pointeur
-00C7   0804           00461     movfw FSR0L
-00C8   00??           00462     movwf ACAL
-00C9   0805           00463     movfw FSR0H
-00CA   00??           00464     movwf ACAH
-00CB                  00465 alarm_loop:
-                      00466 ;restauration du pointeur    
-00CB   08??           00467     movfw ACAL
-00CC   0084           00468     movwf FSR0L
-00CD   08??           00469     movfw ACAH
-00CE   0085           00470     movwf FSR0H
-00CF   0012           00471     moviw FSR0++
-                      00472     pushw  ; durée note
-00D0   001C               M     movwi ++FSR1
-00D1   0012           00473     moviw FSR0++
-                      00474     pushw  ; indice note
-MPASM 5.68                           MAT.ASM   9-21-2016  19:33:58         PAGE 11
-
-
-LOC  OBJECT CODE     LINE SOURCE TEXT
-  VALUE
-
-00D2   001C               M     movwi ++FSR1
-                      00475 ;sauvegarde du pointeur    
-00D3   0804           00476     movfw FSR0L
-00D4   00??           00477     movwf ACAL
-00D5   0805           00478     movfw FSR0H
-00D6   00??           00479     movwf ACAH
-00D7   2???           00480     call tone
+00EA   0784           00533     addwf FSR0L
+00EB   3000           00534     movlw 0
 Message[305]: Using default destination of 1 (file).
-00D8   0B81           00481     decfsz INDF1
-00D9   3???           00482     bra alarm_loop
-                      00483     popw
-00DA   0017               M     moviw FSR1--
-00DB   0008           00484     return
-                      00485 
-                      00486 ; fait entendre une tonalité
-                      00487 ; entrée:  pile ( d n -- )
-                      00488 ;    d -> durée en multiple de 4 msec.
-                      00489 ;    n -> indice de la note dans la table SCALE    
-00DC                  00490 tone:
-                      00491 ; prépare FSR0 pour accéder table SCALE
-00DC   30??           00492     movlw high SCALE
-00DD   0085           00493     movwf FSR0H
-00DE   1785           00494     bsf FSR0H,7
-00DF   30??           00495     movlw low SCALE
-00E0   0084           00496     movwf FSR0L
-                      00497 ;ajoute l'indice de la note à FSR0    
-                      00498     popw
-00E1   0017               M     moviw FSR1--
+00EC   1803 0A85      00535     addcf FSR0H
+00EE   0800           00536     movfw INDF0
+00EF   0020           00537     banksel PR2
+00F0   009B           00538     movwf PR2  ;la valeur retirée de SCALE détermine la période PWM
+00F1   0025           00539     banksel TONE_CCPCON
+00F2   303C           00540     movlw (0xC<<CCP1M0)|(3<<DC1B0)
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+00F3   0093           00541     movwf TONE_CCPCON
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+00F4   0191           00542     clrf TONE_CCPRL   ; les 6 bits les plus significatifs du rapport cyclique
+                      00543 ; activation minuterie TIMER2
+00F5   0020           00544     banksel T2CON
+00F6   3006           00545     movlw (2<<T2CKPS0)|(1<<TMR2ON)
+00F7   009C           00546     movwf T2CON ; préscale 16 et TIMER2 on.
+                      00547     popw ; durée note
+00F8   0017               M     moviw FSR1--
+00F9   2???           00548     call start_msec4_tmr
+00FA   0020           00549     banksel PR2
+00FB   361B           00550     lsrf PR2,W
 Message[305]: Using default destination of 1 (file).
-00E2   0784           00499     addwf FSR0L
-00E3   3F00           00500     moviw 0[FSR0]
-00E4   0020           00501     banksel PR2
-00E5   009B           00502     movwf PR2  ;la valeur retirée de SCALE détermine la période PWM
-                      00503     pushw       ;sauvegarde sur la pile temporairement
-00E6   001C               M     movwi ++FSR1
+00FC   3689           00551     lsrf WREG
 Message[305]: Using default destination of 1 (file).
-00E7   3689           00504     lsrf WREG   ; cette valeur divisé par 2 va dans CCPxL
-00E8   0025           00505     banksel TONE_CCPRL
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-00E9   0091           00506     movwf TONE_CCPRL   ; les 6 bits les plus significatifs du rapport cyclique
-                      00507     popw
-00EA   0017               M     moviw FSR1--
-00EB   3901           00508     andlw 1    ; les 2 bites les moins significatifs du rapport cyclique
-Message[305]: Using default destination of 1 (file).
-00EC   3589           00509     lslf WREG
-Message[305]: Using default destination of 1 (file).
-00ED   0E89           00510     swapf WREG ; dans bits 4 et 5 de CCPxCON
-00EE   380C           00511     iorlw (3<<CCP1M2) ; mode PWM
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-00EF   0093           00512     movwf TONE_CCPCON  ; PWM configuré
-                      00513 ; configuration de la sortie pour le PWM
-00F0   0021           00514     banksel TONE_TRIS
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-MPASM 5.68                           MAT.ASM   9-21-2016  19:33:58         PAGE 12
-
-
-LOC  OBJECT CODE     LINE SOURCE TEXT
-  VALUE
-
-00F1   108C           00515     bcf TONE_TRIS, TONE_PIN ; broche en mode sortie
-                      00516 ; activation minuterie TIMER2
-00F2   0020           00517     banksel T2CON
-00F3   3006           00518     movlw (2<<T2CKPS0)|(1<<TMR2ON)
-00F4   009C           00519     movwf T2CON ; préscale 16 et TIMER2 on.
-                      00520     popw     ; durée
-00F5   0017               M     moviw FSR1--
-00F6   2???           00521     call pause_msec  
-                      00522 ;désactive tone pwm
-                      00523 ;arrête TIMER2
-00F7   0020           00524     banksel T2CON
-00F8   111C           00525     bcf T2CON, TMR2ON
-00F9   0025           00526     banksel TONE_CCPCON
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-00FA   0193           00527     clrf TONE_CCPCON
-00FB   0021           00528     banksel TONE_TRIS
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-00FC   148C           00529     bsf TONE_TRIS, TONE_PIN
-00FD   0008           00530     return
-                      00531     
-                      00532 ; allume un segment de la barre LED
-                      00533 ; entrée:
-                      00534 ;   W contient le numéro du segment
-                      00535 ;   à allumer
-00FE                  00536 light_segment:
-                      00537     pushw
+00FD   3689           00552     lsrf WREG ; rapport cyclique maximal PR2/8
+                      00553     pushw
 00FE   001C               M     movwi ++FSR1
-                      00538 ; initialise FSR0 pour pointer sur la table LED_CON
-00FF   30??           00539     movlw high LED_CONN
-0100   0085           00540     movwf FSR0H
-0101   1785           00541     bsf FSR0H, 7
-0102   30??           00542     movlw low LED_CONN
-0103   0084           00543     movwf FSR0L
-                      00544     popw
-0104   0017               M     moviw FSR1--
+00FF                  00554 attack:    
+00FF   0020           00555     banksel PIR1
+0100   1091           00556     bcf PIR1,TMR2IF
+0101   1C91           00557     btfss PIR1,TMR2IF
+0102   3???           00558     bra $-1
+0103   0025           00559     banksel TONE_CCPRL
+0104   3004           00560     movlw 4
 Message[305]: Using default destination of 1 (file).
-0105   3589           00545     lslf WREG   ; segment * 2
-Message[305]: Using default destination of 1 (file).
-0106   0784           00546     addwf FSR0L ; ajuste le pointeur de table
-0107   0800           00547     movfw INDF0  ; obtient valeur sortie PORT
-0108   0022           00548     banksel DISP_LAT
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0109   008E           00549     movwf DISP_LAT
-Message[305]: Using default destination of 1 (file).
-010A   0A84           00550     incf FSR0L
-010B   0800           00551     movfw INDF0  ; obtient valeur TRIS
-010C   0021           00552     banksel DISP_TRIS
+0105   0791           00561     addwf TONE_CCPRL
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-010D   008E           00553     movwf DISP_TRIS
-010E   0008           00554     return
-                      00555 
-                      00556 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-                      00557 ; commande la position du servo-moteur
-MPASM 5.68                           MAT.ASM   9-21-2016  19:33:58         PAGE 13
+0106   0811           00562     movfw TONE_CCPRL
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 13
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-                      00558 ; NOTE:
-                      00559     ; la fréquence de l'oscillateur est descendue à 2Mhz pour
-                      00560     ; permettre une période de 20msec avec T2
-                      00561     ; le préscale de T2 est programmé à 1/64
-                      00562     ; la période T=(PR2+1)*4*Tosc*PS=156*4*5e-7*64=0,019968
-                      00563     ; la résolution est de Tosc*64=5e-7*64/4=32µSec
-                      00564 ;  entrée:
-                      00565 ;      W contient la valeur de contrôle
-                      00566 ;  valeur comprise entre SERVO_POS_BAS et SERVO_POS_HAUT
-                      00567 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;    
-010F                  00568 servo_pos:
-                      00569     pushw
-010F   001C               M     movwi ++FSR1
-                      00570 ; contrôle des limites    
-0110   3034           00571     movlw SERVO_POS_BAS
-0111   0201           00572     subwf INDF1,W
-0112   3034           00573     movlw SERVO_POS_BAS
-0113   1C03           00574     skpc
-0114   0081           00575     movwf INDF1
-0115   303C           00576     movlw SERVO_POS_HAUT
-0116   0201           00577     subwf INDF1,W
-0117   303C           00578     movlw SERVO_POS_HAUT
-0118   1803           00579     skpnc
-0119   0081           00580     movwf INDF1
-                      00581 ; pour obtenir une période de 50 Hertz sur TIMER2 il faut réduire
-                      00582 ; Fosc à 2Mhz
-011A   0021           00583     banksel OSCCON
-011B   3060           00584     movlw F2MHZ<<IRCF0   ; Fosc=2Mhz
+0107   0201           00563     subwf TOS,W
+0108   1803           00564     skpnc
+0109   3???           00565     bra attack
+010A                  00566 sustain:
+                      00567     popw
+010A   0017               M     moviw FSR1--
+010B   1880           00568     btfsc flags, F_MSEC4
+010C   3???           00569     bra $-1
+010D                  00570 decay: ; décroissance rapport cyclique
+010D   0025           00571     banksel TONE_CCPRL
+010E   3002           00572     movlw 2
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-011C   0099           00585     movwf OSCCON
-                      00586 ; configuration TIMER2 pour période 20 msec
-011D   0020           00587     banksel T2CON
-011E   309B           00588     movlw SERVO_PERIOD ; 20msec
-011F   009B           00589     movwf PR2
-0120   3007           00590     movlw (3<<T2CKPS0)|(1<<TMR2ON)
-0121   009C           00591     movwf T2CON
-                      00592 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;    
-                      00593 ; pour contrôler la vitesse de rotation
-                      00594 ; on part de valeur de l'ancienne commande
-                      00595 ; en progressant vers la nouvelle valeur    
-                      00596 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;    
-                      00597 ;durée du pulse 8 bits les plus significatifs dans CCP2RL et les 
-                      00598 ;2 moins significatifs dans CCP2CON:4,5
-0122                  00599 servo_pos_loop:
-0122   0025           00600     banksel SERVO_CCPCON
-0123   36??           00601     lsrf last_pos,W
+010F   0291           00573     subwf TONE_CCPRL,F
+0110   1C03           00574     skpc
+0111   3???           00575     bra tone_end
+0112   0020           00576     banksel PIR1
+0113   1091           00577     bcf PIR1, TMR2IF
+0114   1C91           00578     btfss PIR1,TMR2IF
+0115   3???           00579     bra $-1 ; attent fin cycle PWM
+0116   3???           00580     bra decay
+0117                  00581 tone_end:    
+                      00582 ;arrête TIMER2
+0117   0020           00583     banksel T2CON
+0118   111C           00584     bcf T2CON, TMR2ON
+0119   0025           00585     banksel TONE_CCPCON
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+011A   0193           00586     clrf TONE_CCPCON
+011B   0022           00587     banksel TONE_LAT
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+011C   108C           00588     bcf TONE_LAT, TONE_PIN
+011D   0008           00589     return
+                      00590     
+                      00591 ; allume un segment de la barre LED
+                      00592 ; entrée:
+                      00593 ;   W contient le numéro du segment
+                      00594 ;   à allumer
+011E                  00595 light_segment:
+                      00596     pushw
+011E   001C               M     movwi ++FSR1
+                      00597 ; initialise FSR0 pour pointer sur la table LED_CON
+011F   30??           00598     movlw high LED_CONN
+0120   0085           00599     movwf FSR0H
+                      00600 ;    bsf FSR0H, 7
+0121   30??           00601     movlw low LED_CONN
+0122   0084           00602     movwf FSR0L
+                      00603     popw
+0123   0017               M     moviw FSR1--
 Message[305]: Using default destination of 1 (file).
-0124   3689           00602     lsrf WREG
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0125   0098           00603     movwf SERVO_CCPRL
-0126   0E??           00604     swapf last_pos,W
-0127   3930           00605     andlw (3<<4)
-0128   380C           00606     iorlw 3<<CCP2M2  ; mode PWM
-MPASM 5.68                           MAT.ASM   9-21-2016  19:33:58         PAGE 14
+0124   3589           00604     lslf WREG   ; segment * 2
+Message[305]: Using default destination of 1 (file).
+0125   0784           00605     addwf FSR0L ; ajuste le pointeur de table
+0126   3000           00606     movlw 0
+Message[305]: Using default destination of 1 (file).
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 14
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
+0127   1803 0A85      00607     addcf FSR0H 
+0129   0800           00608     movfw INDF0  ; obtient valeur sortie PORT
+012A   0022           00609     banksel DISP_LAT
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0129   009A           00607     movwf SERVO_CCPCON
-                      00608 ; attend la fin du cycle
-012A   3003           00609     movlw SERVO_DLY
-012B   00??           00610     movwf ACAL
-012C                  00611 delay:
-012C   0020           00612     banksel PIR1
-012D   1091           00613     bcf PIR1,TMR2IF
-012E   1C91           00614     btfss PIR1,TMR2IF
-012F   3???           00615     bra $-1
-0130   0B??           00616     decfsz ACAL,F
-0131   3???           00617     bra delay
-0132   0801           00618     movfw INDF1
-0133   02??           00619     subwf last_pos,W
-0134   1903           00620     skpnz
-0135   3???           00621     bra servo_pos_exit
-0136   0801           00622     movfw INDF1
-0137   02??           00623     subwf last_pos,W
-0138   1C03           00624     skpc
-0139   0A??           00625     incf last_pos,F
-013A   1803           00626     skpnc
-013B   03??           00627     decf last_pos,F
-013C   3???           00628     bra servo_pos_loop
-013D                  00629 servo_pos_exit:  
-                      00630     popw
-013D   0017               M     moviw FSR1--
-                      00631 ;arret de la commande
-                      00632 ;attend la fin du cycle PWM
-013E   0020           00633     banksel PR2
-013F   081B           00634     movfw PR2
-0140   021A           00635     subwf TMR2,W
-0141   1C03           00636     skpc
-0142   3???           00637     bra $-3
-0143   0025           00638     banksel SERVO_CCPCON
+012B   008E           00610     movwf DISP_LAT
+Message[305]: Using default destination of 1 (file).
+012C   0A84           00611     incf FSR0L
+012D   0800           00612     movfw INDF0  ; obtient valeur TRIS
+012E   0021           00613     banksel DISP_TRIS
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0144   019A           00639     clrf SERVO_CCPCON
-0145   0020           00640     banksel T2CON
-0146   111C           00641     bcf T2CON, TMR2ON
-                      00642 ;remet Fosc à 8Mhz    
-0147   0021           00643     banksel OSCCON
-0148   3070           00644     movlw F8MHZ<<IRCF0  ; Fosc=8Mhz
+012F   008E           00614     movwf DISP_TRIS
+0130   0008           00615     return
+                      00616 
+                      00617 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00618 ; commande la position du servo-moteur
+                      00619 ; NOTE:
+                      00620     ; la fréquence de l'oscillateur est descendue à 2Mhz pour
+                      00621     ; permettre une période de 20msec avec T2
+                      00622     ; le préscale de T2 est programmé à 1/64
+                      00623     ; la période T=(PR2+1)*4*Tosc*PS=156*4*5e-7*64=0,019968
+                      00624     ; la résolution est de Tosc*64=5e-7*64/4=32µSec
+                      00625 ;  entrée:
+                      00626 ;      W contient la valeur de contrôle
+                      00627 ;  valeur comprise entre SERVO_POS_BAS et SERVO_POS_HAUT
+                      00628 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;    
+0131                  00629 servo_pos:
+                      00630     pushw
+0131   001C               M     movwi ++FSR1
+                      00631 ; contrôle des limites    
+0132   3034           00632     movlw SERVO_POS_BAS
+0133   0201           00633     subwf TOS,W
+0134   3034           00634     movlw SERVO_POS_BAS
+0135   1C03           00635     skpc
+0136   0081           00636     movwf TOS
+0137   303C           00637     movlw SERVO_POS_HAUT
+0138   0201           00638     subwf TOS,W
+0139   303C           00639     movlw SERVO_POS_HAUT
+013A   1803           00640     skpnc
+013B   0081           00641     movwf TOS
+                      00642 ; pour obtenir une période de 50 Hertz sur TIMER2 il faut réduire
+                      00643 ; Fosc à 2Mhz
+013C   0021           00644     banksel OSCCON
+013D   3060           00645     movlw F2MHZ<<IRCF0   ; Fosc=2Mhz
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-0149   0099           00645     movwf OSCCON
-014A   0008           00646     return
-                      00647     
-                      00648 ; division non signée entier 8 bits par 15
-                      00649 ; entrée:
-                      00650 ;   dividende dans W
-                      00651 ;sortie:
-                      00652 ;   quotient dans ACAH
-                      00653 ;   reste dans ACAL    
-                      00654 #define DIVIDENDE ACAL    
-                      00655 #define QUOTIENT ACAH
-MPASM 5.68                           MAT.ASM   9-21-2016  19:33:58         PAGE 15
+013E   0099           00646     movwf OSCCON
+                      00647 ; configuration TIMER2 pour période 20 msec
+013F   0020           00648     banksel T2CON
+0140   309B           00649     movlw SERVO_PERIOD ; 20msec
+0141   009B           00650     movwf PR2
+0142   3007           00651     movlw (3<<T2CKPS0)|(1<<TMR2ON)
+0143   009C           00652     movwf T2CON
+                      00653 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;    
+                      00654 ; pour contrôler la vitesse de rotation
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 15
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-                      00656 #define DIVISEUR ACBL    
-014B                  00657 div15:
-014B   01??           00658     clrf QUOTIENT
-014C   3A00           00659     xorlw 0
-014D   1903           00660     skpnz
-014E   3???           00661     bra div15_exit
-014F   00??           00662     movwf DIVIDENDE
-0150   30F0           00663     movlw 0xF0 ; diviseur<<4
-0151   00??           00664     movwf DIVISEUR
-0152   02??           00665     subwf DIVIDENDE,W
-0153   1C03           00666     skpc
-0154   3???           00667     bra div15_1
-0155   1600           00668     bsf QUOTIENT,4
-0156   00??           00669     movwf DIVIDENDE ; conserve reste pour prochaine étape
-0157                  00670 div15_1:
+                      00655 ; on part de valeur de l'ancienne commande
+                      00656 ; en progressant vers la nouvelle valeur    
+                      00657 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;    
+                      00658 ;durée du pulse 8 bits les plus significatifs dans CCP2RL et les 
+                      00659 ;2 moins significatifs dans CCP2CON:4,5
+0144                  00660 servo_pos_loop:
+0144   0025           00661     banksel SERVO_CCPCON
+0145   36??           00662     lsrf last_pos,W
 Message[305]: Using default destination of 1 (file).
-0157   36??           00671     lsrf DIVISEUR
-0158   08??           00672     movfw DIVISEUR
-0159   02??           00673     subwf DIVIDENDE,W
-015A   1C03           00674     skpc
-015B   3???           00675     bra div15_2
-015C   1580           00676     bsf QUOTIENT,3
-015D   00??           00677     movwf DIVIDENDE
-015E                  00678 div15_2:
-Message[305]: Using default destination of 1 (file).
-015E   36??           00679     lsrf DIVISEUR
-015F   08??           00680     movfw DIVISEUR
-0160   02??           00681     subwf DIVIDENDE,W
-0161   1C03           00682     skpc
-0162   3???           00683     bra div15_3
-0163   1500           00684     bsf QUOTIENT,2
-0164   00??           00685     movwf DIVIDENDE
-0165                  00686 div15_3:
-Message[305]: Using default destination of 1 (file).
-0165   36??           00687     lsrf DIVISEUR
-0166   08??           00688     movfw DIVISEUR
-0167   02??           00689     subwf DIVIDENDE,W
-0168   1C03           00690     skpc
-0169   3???           00691     bra div15_4
-016A   1480           00692     bsf QUOTIENT,1
-016B   00??           00693     movwf DIVIDENDE
-016C                  00694 div15_4:
-Message[305]: Using default destination of 1 (file).
-016C   36??           00695     lsrf DIVISEUR
-016D   08??           00696     movfw DIVISEUR
-016E   02??           00697     subwf DIVIDENDE,W
-016F   1803           00698     skpnc
-0170   1400           00699     bsf QUOTIENT,0
-0171                  00700 div15_exit:
-0171   08??           00701     movfw QUOTIENT
-0172   0008           00702     return
-                      00703 
-                      00704 ; démarre la minuterie des secondes
-MPASM 5.68                           MAT.ASM   9-21-2016  19:33:58         PAGE 16
+0146   3689           00663     lsrf WREG
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0147   0098           00664     movwf SERVO_CCPRL
+0148   0E??           00665     swapf last_pos,W
+0149   3930           00666     andlw (3<<4)
+014A   380C           00667     iorlw 3<<CCP2M2  ; mode PWM
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+014B   009A           00668     movwf SERVO_CCPCON
+                      00669 ; attend la fin du cycle
+014C   3003           00670     movlw SERVO_DLY
+014D   00??           00671     movwf ACAL
+014E                  00672 delay:
+014E   0020           00673     banksel PIR1
+014F   1091           00674     bcf PIR1,TMR2IF
+0150   1C91           00675     btfss PIR1,TMR2IF
+0151   3???           00676     bra $-1
+0152   0B??           00677     decfsz ACAL,F
+0153   3???           00678     bra delay
+0154   0801           00679     movfw TOS
+0155   02??           00680     subwf last_pos,W
+0156   1903           00681     skpnz
+0157   3???           00682     bra servo_pos_exit
+0158   0801           00683     movfw TOS
+0159   02??           00684     subwf last_pos,W
+015A   1C03           00685     skpc
+015B   0A??           00686     incf last_pos,F
+015C   1803           00687     skpnc
+015D   03??           00688     decf last_pos,F
+015E   3???           00689     bra servo_pos_loop
+015F                  00690 servo_pos_exit:  
+                      00691     popw
+015F   0017               M     moviw FSR1--
+                      00692 ;arret de la commande
+                      00693 ;attend la fin du cycle PWM
+0160   0020           00694     banksel PR2
+0161   081B           00695     movfw PR2
+0162   021A           00696     subwf TMR2,W
+0163   1C03           00697     skpc
+0164   3???           00698     bra $-3
+0165   0025           00699     banksel SERVO_CCPCON
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0166   019A           00700     clrf SERVO_CCPCON
+0167   0020           00701     banksel T2CON
+0168   111C           00702     bcf T2CON, TMR2ON
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 16
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-                      00705 ; utilisation du TIMER1 avec LFOSC.    
-                      00706 ; entrée:
-                      00707 ;   W=durée en secondes    
-0173                  00708 start_timer:
-0173   00??           00709     movwf secondes
-0174   0020           00710     banksel TMR1H
-0175   3083           00711     movlw high TMR1_DLY
-0176   0097           00712     movwf TMR1H
-0177   3000           00713     movlw low TMR1_DLY
-0178   0096           00714     movwf TMR1L
-0179   30C1           00715     movlw (3<<TMR1CS0)|1
-017A   0098           00716     movwf T1CON
-017B   0020           00717     banksel PIR1
-017C   1011           00718     bcf PIR1, TMR1IF
-017D   0021           00719     banksel PIE1
+                      00703 ;remet Fosc à 8Mhz    
+0169   0021           00704     banksel OSCCON
+016A   3070           00705     movlw F8MHZ<<IRCF0  ; Fosc=8Mhz
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-017E   1411           00720     bsf PIE1, TMR1IE
-017F   170B           00721     bsf INTCON,PEIE
-0180   178B           00722     bsf INTCON,GIE
-0181   1400           00723     bsf flags, F_SEC
-0182   0008           00724     return
-                      00725 
-                      00726     
-                      00727 ; démarre la minuterie des millisecondes
-                      00728 ; entrée:
-                      00729 ;    W contient la durée en multiple de 4 msec.
-0183                  00730 start_msec4_tmr:
-0183   00??           00731     movwf msec4
-0184   0020           00732     banksel TMR0
-0185   3006           00733     movlw TMR0_DLY
-0186   0095           00734     movwf TMR0
-0187   110B           00735     bcf INTCON, T0IF
-0188   168B           00736     bsf INTCON, T0IE
-0189   178B           00737     bsf INTCON, GIE
-018A   1480           00738     bsf flags, F_MSEC4
-018B   0008           00739     return
-                      00740 
-                      00741 ;pause en multiple de 4 msec
-                      00742 ; entrée:  W -> pause= 4*W msec   
-018C                  00743 pause_msec:
-018C   2???           00744     call start_msec4_tmr
-018D   1880           00745     btfsc flags, F_MSEC4
-018E   3???           00746     bra $-1
-018F   0008           00747     return
-                      00748     
-                      00749 ;auto test à l'allumage
-                      00750 ; allume tous les segments l'un après l'autre
-                      00751 ; test alarme
-                      00752 ; test servo-moteur
-0190                  00753 self_test:
-                      00754     display_enable
-0190   0024               M     banksel DISP_WPU
-Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-MPASM 5.68                           MAT.ASM   9-21-2016  19:33:58         PAGE 17
+016B   0099           00706     movwf OSCCON
+016C   0008           00707     return
+                      00708     
+                      00709 ; division non signée entier 8 bits par 15
+                      00710 ; entrée:
+                      00711 ;   dividende dans W
+                      00712 ;sortie:
+                      00713 ;   quotient dans ACAH
+                      00714 ;   reste dans ACAL    
+                      00715 #define DIVIDENDE ACAL    
+                      00716 #define QUOTIENT ACAH
+                      00717 #define DIVISEUR ACBL    
+016D                  00718 div15:
+016D   01??           00719     clrf QUOTIENT
+016E   3A00           00720     xorlw 0
+016F   1903           00721     skpnz
+0170   3???           00722     bra div15_exit
+0171   00??           00723     movwf DIVIDENDE
+0172   30F0           00724     movlw 0xF0 ; diviseur<<4
+0173   00??           00725     movwf DIVISEUR
+0174   02??           00726     subwf DIVIDENDE,W
+0175   1C03           00727     skpc
+0176   3???           00728     bra div15_1
+0177   1600           00729     bsf QUOTIENT,4
+0178   00??           00730     movwf DIVIDENDE ; conserve reste pour prochaine étape
+0179                  00731 div15_1:
+Message[305]: Using default destination of 1 (file).
+0179   36??           00732     lsrf DIVISEUR
+017A   08??           00733     movfw DIVISEUR
+017B   02??           00734     subwf DIVIDENDE,W
+017C   1C03           00735     skpc
+017D   3???           00736     bra div15_2
+017E   1580           00737     bsf QUOTIENT,3
+017F   00??           00738     movwf DIVIDENDE
+0180                  00739 div15_2:
+Message[305]: Using default destination of 1 (file).
+0180   36??           00740     lsrf DIVISEUR
+0181   08??           00741     movfw DIVISEUR
+0182   02??           00742     subwf DIVIDENDE,W
+0183   1C03           00743     skpc
+0184   3???           00744     bra div15_3
+0185   1500           00745     bsf QUOTIENT,2
+0186   00??           00746     movwf DIVIDENDE
+0187                  00747 div15_3:
+Message[305]: Using default destination of 1 (file).
+0187   36??           00748     lsrf DIVISEUR
+0188   08??           00749     movfw DIVISEUR
+0189   02??           00750     subwf DIVIDENDE,W
+018A   1C03           00751     skpc
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 17
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-0191   018E               M     clrf DISP_WPU
-0192   300A           00755     movlw .10
-                      00756     pushw
-0193   001C               M     movwi ++FSR1
-0194                  00757 disp_test:
-0194   3F40           00758     moviw 0[FSR1]
-0195   2???           00759     call light_segment
-0196   3019           00760     movlw .25
-                      00761     pushw
-0197   001C               M     movwi ++FSR1
-                      00762     over
-0198   3F7F               M     moviw (-1)&0x3f[FSR1]
+018B   3???           00752     bra div15_4
+018C   1480           00753     bsf QUOTIENT,1
+018D   00??           00754     movwf DIVIDENDE
+018E                  00755 div15_4:
+Message[305]: Using default destination of 1 (file).
+018E   36??           00756     lsrf DIVISEUR
+018F   08??           00757     movfw DIVISEUR
+0190   02??           00758     subwf DIVIDENDE,W
+0191   1803           00759     skpnc
+0192   1400           00760     bsf QUOTIENT,0
+0193                  00761 div15_exit:
+0193   08??           00762     movfw QUOTIENT
+0194   0008           00763     return
+                      00764 
+                      00765 ; démarre la minuterie des secondes
+                      00766 ; utilisation du TIMER1 avec LFOSC.    
+                      00767 ; entrée:
+                      00768 ;   W=durée en secondes    
+0195                  00769 start_timer:
+0195   00??           00770     movwf secondes
+0196   0020           00771     banksel TMR1H
+0197   3083           00772     movlw high TMR1_DLY
+0198   0097           00773     movwf TMR1H
+0199   3000           00774     movlw low TMR1_DLY
+019A   0096           00775     movwf TMR1L
+019B   30C1           00776     movlw (3<<TMR1CS0)|1
+019C   0098           00777     movwf T1CON
+019D   0020           00778     banksel PIR1
+019E   1011           00779     bcf PIR1, TMR1IF
+019F   0021           00780     banksel PIE1
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+01A0   1411           00781     bsf PIE1, TMR1IE
+01A1   170B           00782     bsf INTCON,PEIE
+01A2   178B           00783     bsf INTCON,GIE
+01A3   1400           00784     bsf flags, F_SEC
+01A4   0008           00785     return
+                      00786 
+                      00787     
+                      00788 ; démarre la minuterie des millisecondes
+                      00789 ; entrée:
+                      00790 ;    W contient la durée en multiple de 4 msec.
+01A5                  00791 start_msec4_tmr:
+01A5   00??           00792     movwf msec4
+01A6   0020           00793     banksel TMR0
+01A7   3006           00794     movlw TMR0_DLY
+01A8   0095           00795     movwf TMR0
+01A9   110B           00796     bcf INTCON, T0IF
+01AA   168B           00797     bsf INTCON, T0IE
+01AB   178B           00798     bsf INTCON, GIE
+01AC   1480           00799     bsf flags, F_MSEC4
+01AD   0008           00800     return
+                      00801 
+                      00802 ;pause en multiple de 4 msec
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 18
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00803 ; entrée:  W -> pause= 4*W msec   
+01AE                  00804 pause_msec:
+01AE   2???           00805     call start_msec4_tmr
+01AF   1880           00806     btfsc flags, F_MSEC4
+01B0   3???           00807     bra $-1
+01B1   0008           00808     return
+                      00809 
+                      00810 ;générateur pseudo-hasard
+                      00811 ;modifie variable rseed
+                      00812 ; fonction itérative
+                      00813 ;   1) si rseed est impaire, incrémente rseed
+                      00814 ;   2) multiplie rseed par 3/2
+                      00815 ;   3) recommence à 1    
+                      00816     radix dec
+01B2                  00817 rand:
+01B2   1C80           00818     btfss rseed,1 
+01B3   3???           00819     bra no_incr
+01B4   3001           00820     movlw 1         
+01B5   07??           00821     addwf rseed, F
+01B6   0189           00822     clrf WREG
+01B7   1803 0A??      00823     addcf rseed+1,F
+01B9   1803 0A??      00824     addcf rseed+2,F
+01BB                  00825 no_incr:    
+                      00826 ; empile rseed*2    
+01BB   35??           00827     lslf rseed,W
+                      00828     pushw 
+01BC   001C               M     movwi ++FSR1
+01BD   0D??           00829     rlf rseed+1,W
+                      00830     pushw
+01BE   001C               M     movwi ++FSR1
+01BF   0D??           00831     rlf rseed+2,W
+                      00832     pushw
+01C0   001C               M     movwi ++FSR1
+                      00833 ; additionne rseed*2 à rseed    
+01C1   3F7E           00834     moviw -2[FSR1]
+01C2   07??           00835     addwf rseed,F
+01C3   3F7F           00836     moviw -1[FSR1]
+01C4   1803 0A??      00837     addcf rseed+1,F
+                      00838     popw
+01C6   0017               M     moviw FSR1--
+01C7   1803 0A??      00839     addcf rseed+2, F
+                      00840 ; divise rseed par 2    
+01C9   36??           00841     lsrf rseed+2,F
+01CA   0C??           00842     rrf rseed+1,F
+01CB   0C??           00843     rrf rseed, F
+                      00844 ; jette rseed*2 qui est sur la pile    
+                      00845     drop
+01CC   317F               M     addfsr FSR1,0x3f
+                      00846     drop
+01CD   317F               M     addfsr FSR1,0x3f
+01CE   0008           00847     return
+                      00848     radix hex
+                      00849     
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 19
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00850 ;auto test à l'allumage
+                      00851 ; allume tous les segments l'un après l'autre
+                      00852 ; test alarme
+                      00853 ; test servo-moteur
+01CF                  00854 self_test:
+                      00855     display_enable
+01CF   0024               M     banksel DISP_WPU
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+01D0   018E               M     clrf DISP_WPU
+01D1   300A           00856     movlw .10
+                      00857     pushw
+01D2   001C               M     movwi ++FSR1
+01D3                  00858 disp_test:
+01D3   0801           00859     movfw TOS
+01D4   2???           00860     call light_segment
+01D5   3019           00861     movlw .25
+                      00862     pushw
+01D6   001C               M     movwi ++FSR1
+                      00863     over
+01D7   3F7F               M     moviw (-1)&0x3f[FSR1]
                           M     pushw
-0199   001C               M     movwi ++FSR1
-019A   2???           00763     call tone
-019B   0B81           00764     decfsz INDF1,F
-019C   3???           00765     bra disp_test
-                      00766     popw
-019D   0017               M     moviw FSR1--
-                      00767     display_disable
-019E   303F               M     movlw 0x3f
-019F   0021               M     banksel DISP_TRIS
+01D8   001C               M     movwi ++FSR1
+01D9   2???           00864     call tone
+01DA   0B81           00865     decfsz TOS,F
+01DB   3???           00866     bra disp_test
+                      00867     popw
+01DC   0017               M     moviw FSR1--
+                      00868     display_disable
+01DD   303F               M     movlw 0x3f
+01DE   0021               M     banksel DISP_TRIS
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-01A0   008E               M     movwf DISP_TRIS
-01A1   0024               M     banksel DISP_WPU
+01DF   008E               M     movwf DISP_TRIS
+01E0   0024               M     banksel DISP_WPU
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-01A2   008E               M     movwf DISP_WPU
-01A3                  00768 tone_test:
-01A3   3014           00769     movlw .20
-                      00770     pushw
-01A4   001C               M     movwi ++FSR1
-01A5   3015           00771     movlw .21
-                      00772     pushw
-01A6   001C               M     movwi ++FSR1
-01A7   2???           00773     call tone
-01A8                  00774 servo_test:
-01A8   3034           00775     movlw SERVO_POS_BAS
-01A9   2???           00776     call servo_pos
-01AA   303C           00777     movlw SERVO_POS_HAUT
-01AB   2???           00778     call servo_pos
-01AC   0008           00779     return
-                      00780 
-                      00781 ; easter egg    
-01AD                  00782 un_oeuf:
-01AD   30??           00783     movlw high HYMNE
-01AE   0085           00784     movwf FSR0H
-01AF   30??           00785     movlw low HYMNE
-01B0   0084           00786     movwf FSR0L
-01B1   0012           00787     moviw FSR0++
-                      00788     pushw
-01B2   001C               M     movwi ++FSR1
-01B3                  00789 oeuf_loop:
-01B3   0012           00790     moviw FSR0++
-MPASM 5.68                           MAT.ASM   9-21-2016  19:33:58         PAGE 18
+01E1   008E               M     movwf DISP_WPU
+01E2                  00869 tone_test:
+01E2   3014           00870     movlw .20
+                      00871     pushw
+01E3   001C               M     movwi ++FSR1
+01E4   3015           00872     movlw .21
+                      00873     pushw
+01E5   001C               M     movwi ++FSR1
+01E6   2???           00874     call tone
+01E7                  00875 servo_test:
+01E7   3034           00876     movlw SERVO_POS_BAS
+01E8   2???           00877     call servo_pos
+01E9   303C           00878     movlw SERVO_POS_HAUT
+01EA   2???           00879     call servo_pos
+01EB   0008           00880     return
+                      00881 
+                      00882 ; easter egg 
+                      00883 ; fonction cachée obtenue lorsque le bouton
+                      00884 ; temps est enfoncé lorsque l'utilisateur presse 
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 20
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-                      00791     pushw
-01B4   001C               M     movwi ++FSR1
-01B5   0012           00792     moviw FSR0++
-                      00793     pushw
-01B6   001C               M     movwi ++FSR1
-01B7   0804           00794     movfw FSR0L
-01B8   00??           00795     movwf temp
-01B9   2???           00796     call tone
-01BA   08??           00797     movfw temp
-01BB   0084           00798     movwf FSR0L
-01BC   3019           00799     movlw .25
-01BD   2???           00800     call pause_msec
+                      00885 ; le bouton start
+01EC                  00886 boite_a_musique:
+01EC   3007           00887     movlw .7
+01ED   05??           00888     andwf musique,W
+                      00889     case 0, musique_0
+01EE   3A00               M     xorlw 0
+01EF   1903               M     skpnz
+01F0   3???               M     bra musique_0
+01F1   3A00               M     xorlw 0
+                      00890     case 1, musique_1
+01F2   3A01               M     xorlw 1
+01F3   1903               M     skpnz
+01F4   3???               M     bra musique_1
+01F5   3A01               M     xorlw 1
+                      00891     case 2, musique_2
+01F6   3A02               M     xorlw 2
+01F7   1903               M     skpnz
+01F8   3???               M     bra musique_2
+01F9   3A02               M     xorlw 2
+                      00892     case 3, musique_3
+01FA   3A03               M     xorlw 3
+01FB   1903               M     skpnz
+01FC   3???               M     bra musique_3
+01FD   3A03               M     xorlw 3
+                      00893     case 4, musique_4
+01FE   3A04               M     xorlw 4
+01FF   1903               M     skpnz
+0200   3???               M     bra musique_4
+0201   3A04               M     xorlw 4
+                      00894     case 5, musique_5
+0202   3A05               M     xorlw 5
+0203   1903               M     skpnz
+0204   3???               M     bra musique_5
+0205   3A05               M     xorlw 5
+                      00895     case 6, musique_6
+0206   3A06               M     xorlw 6
+0207   1903               M     skpnz
+0208   3???               M     bra musique_6
+0209   3A06               M     xorlw 6
+                      00896 ; rencontre du 3ième type    
+020A   30??           00897     movlw high ce3k
+020B   0085           00898     movwf FSR0H
+020C   30??           00899     movlw low ce3k
+020D   0084           00900     movwf FSR0L
+020E   3???           00901     bra joue
+020F                  00902 musique_6:
+020F   30??           00903     movlw high greensleeves
+0210   0085           00904     movwf FSR0H
+0211   30??           00905     movlw low greensleeves
+0212   0084           00906     movwf FSR0L
+0213   3???           00907     bra joue
+0214                  00908 musique_5:
+0214   30??           00909     movlw high gstq
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 21
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0215   0085           00910     movwf FSR0H
+0216   30??           00911     movlw low gstq
+0217   0084           00912     movwf FSR0L
+0218   3???           00913     bra joue
+0219                  00914 musique_4:
+0219   30??           00915     movlw high bon_tabac
+021A   0085           00916     movwf FSR0H
+021B   30??           00917     movlw low bon_tabac
+021C   0084           00918     movwf FSR0L
+021D   3???           00919     bra joue
+021E                  00920 musique_3:
+021E   30??           00921     movlw high frere_jacques
+021F   0085           00922     movwf FSR0H
+0220   30??           00923     movlw low frere_jacques
+0221   0084           00924     movwf FSR0L
+0222   3???           00925     bra joue
+0223                  00926 musique_2:
+0223   30??           00927     movlw high claire_fontaine
+0224   0085           00928     movwf FSR0H
+0225   30??           00929     movlw low claire_fontaine
+0226   0084           00930     movwf FSR0L
+0227   3???           00931     bra joue
+0228                  00932 musique_1:
+0228   30??           00933     movlw high melodia
+0229   0085           00934     movwf FSR0H
+022A   30??           00935     movlw low melodia
+022B   0084           00936     movwf FSR0L
+022C   3???           00937     bra joue
+022D                  00938 musique_0:
+022D   30??           00939     movlw high hymne_joie
+022E   0085           00940     movwf FSR0H
+022F   30??           00941     movlw low hymne_joie
+0230   0084           00942     movwf FSR0L
+0231                  00943 joue:    
+0231   0012           00944     moviw FSR0++
+                      00945     pushw
+0232   001C               M     movwi ++FSR1
+0233                  00946 notes_loop:
+0233   0012           00947     moviw FSR0++ 
+                      00948     pushw
+0234   001C               M     movwi ++FSR1
+0235   0012           00949     moviw FSR0++
+                      00950     pushw
+0236   001C               M     movwi ++FSR1
+0237   0804           00951     movfw FSR0L ; sauvegarde FSR0
+0238   00??           00952     movwf ACAL
+0239   0805           00953     movfw FSR0H
+023A   00??           00954     movwf ACAH
+023B   2???           00955     call tone
+023C   08??           00956     movfw ACAL ; restaure FSR0
+023D   0084           00957     movwf FSR0L
+023E   08??           00958     movfw ACAH
+023F   0085           00959     movwf FSR0H
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 22
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0240   300A           00960     movlw .10
+0241   2???           00961     call pause_msec
 Message[305]: Using default destination of 1 (file).
-01BE   0B81           00801     decfsz INDF1
-01BF   3???           00802     bra oeuf_loop
-                      00803     drop
-01C0   317F               M     addfsr FSR1,-1&0x3f
-01C1   0008           00804     return
-                      00805     
-                      00806 ;;;;;;;;;;;;;;;;
-                      00807 ;  tables
-                      00808 ;;;;;;;;;;;;;;;;  
-                      00809     org  0x700   
-                      00810 ; connection des LED
-                      00811 ; ordre inversé dans le montage final    
-0700                  00812 LED_CONN: ; PORT data, TRIS data
-0700   3400 34FF      00813     dt 0, 0xFF ; tous les segments éteints
-0702   3408 34F3      00814     dt 1<<A10, ~(1<<C10 | 1<<A10)
-0704   3404 34F3      00815     dt 1<<A9, ~(1<<C9 | 1<<A9)
-0706   3404 34EB      00816     dt 1<<A8, ~(1<<C8 | 1<<A8)
-0708   3404 34DB      00817     dt 1<<A7, ~(1<<C7 | 1<<A7)
-070A   3402 34F5      00818     dt 1<<A6, ~(1<<C6 | 1<<A6)
-070C   3402 34ED      00819     dt 1<<A5, ~(1<<C5 | 1<<A5)
-070E   3402 34DD      00820     dt 1<<A4, ~(1<<C4 | 1<<A4)
-0710   3401 34F6      00821     dt 1<<A3, ~(1<<C3 | 1<<A3)
-0712   3401 34EE      00822     dt 1<<A2, ~(1<<C2 | 1<<A2)
-0714   3401 34DE      00823     dt 1<<A1, ~(1<<C1 | 1<<A1)
-0716   3400 34FF      00824     dt 0, 0xFF
-0718   3400 34FF      00825     dt 0, 0xFF
-071A   3400 34FF      00826     dt 0, 0xFF
-071C   3400 34FF      00827     dt 0, 0xFF
-071E   3400 34FF      00828     dt 0, 0xFF
-                      00829 
-                      00830 ;valeur de PR2 pour généré tonalités gamme tempéré
-0720                  00831 SCALE:
-0720   34EE           00832     dt .238 ;0: 523 DO
-0721   34E1           00833     dt .225 ;1: 554 DO#
-0722   34D4           00834     dt .212 ;2: 587 RÉ
-0723   34C8           00835     dt .200 ;3: 622 RÉ#
-0724   34BD           00836     dt .189 ;4: 659 MI
-0725   34B2           00837     dt .178 ;5: 698 FA
-0726   34A8           00838     dt .168 ;6: 740 FA#
-0727   349E           00839     dt .158 ;7: 784 SOL
-MPASM 5.68                           MAT.ASM   9-21-2016  19:33:58         PAGE 19
+0242   0B81           00962     decfsz TOS
+0243   3???           00963     bra notes_loop
+                      00964     drop
+0244   317F               M     addfsr FSR1,0x3f
+Message[305]: Using default destination of 1 (file).
+0245   0A??           00965     incf musique
+0246   0008           00966     return
+                      00967    
+                      00968 ;;;;;;;;;;;;;;;;
+                      00969 ;  tables
+                      00970 ;;;;;;;;;;;;;;;;     
+                      00971 ; connection des LED
+                      00972 ; ordre inversé dans le montage final    
+0247                  00973 LED_CONN: ; PORT data, TRIS data
+0247   3400 34FF      00974     dt 0, 0xFF ; tous les segments éteints
+0249   3408 34F3      00975     dt 1<<A10, ~(1<<C10 | 1<<A10)
+024B   3404 34F3      00976     dt 1<<A9, ~(1<<C9 | 1<<A9)
+024D   3404 34EB      00977     dt 1<<A8, ~(1<<C8 | 1<<A8)
+024F   3404 34DB      00978     dt 1<<A7, ~(1<<C7 | 1<<A7)
+0251   3402 34F5      00979     dt 1<<A6, ~(1<<C6 | 1<<A6)
+0253   3402 34ED      00980     dt 1<<A5, ~(1<<C5 | 1<<A5)
+0255   3402 34DD      00981     dt 1<<A4, ~(1<<C4 | 1<<A4)
+0257   3401 34F6      00982     dt 1<<A3, ~(1<<C3 | 1<<A3)
+0259   3401 34EE      00983     dt 1<<A2, ~(1<<C2 | 1<<A2)
+025B   3401 34DE      00984     dt 1<<A1, ~(1<<C1 | 1<<A1)
+025D   3400 34FF      00985     dt 0, 0xFF
+025F   3400 34FF      00986     dt 0, 0xFF
+0261   3400 34FF      00987     dt 0, 0xFF
+0263   3400 34FF      00988     dt 0, 0xFF
+0265   3400 34FF      00989     dt 0, 0xFF
+                      00990 
+                      00991 ;valeur de PR2 pour généré tonalités gamme tempéré
+0267                  00992 SCALE:
+0267   34EE           00993     dt .238 ;0: 523 DO
+0268   34E1           00994     dt .225 ;1: 554 DO#
+0269   34D4           00995     dt .212 ;2: 587 RÉ
+026A   34C8           00996     dt .200 ;3: 622 RÉ#
+026B   34BD           00997     dt .189 ;4: 659 MI
+026C   34B2           00998     dt .178 ;5: 698 FA
+026D   34A8           00999     dt .168 ;6: 740 FA#
+026E   349E           01000     dt .158 ;7: 784 SOL
+026F   3495           01001     dt .149 ;8: 831 SOL#
+0270   348D           01002     dt .141 ;9: 880 LA
+0271   3485           01003     dt .133 ;10: 932 LA#
+0272   347E           01004     dt .126 ;11: 988 SI
+0273   3476           01005     dt .118 ;12: 1047 DO
+0274   3470           01006     dt .112 ;13: 1109 DO#
+0275   3469           01007     dt .105 ;14: 1175 RÉ
+0276   3463           01008     dt .99  ;15: 1245 RÉ#
+0277   345E           01009     dt .94  ;16: 1319 MI
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 23
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-0728   3495           00840     dt .149 ;8: 831 SOL#
-0729   348D           00841     dt .141 ;9: 880 LA
-072A   3485           00842     dt .133 ;10: 932 LA#
-072B   347E           00843     dt .126 ;11: 988 SI
-072C   3476           00844     dt .118 ;12: 1047 DO
-072D   3470           00845     dt .112 ;13: 1109 DO#
-072E   3469           00846     dt .105 ;14: 1175 RÉ
-072F   3463           00847     dt .99  ;15: 1245 RÉ#
-0730   345E           00848     dt .94  ;16: 1319 MI
-0731   3458           00849     dt .88  ;17: 1397 FA
-0732   3453           00850     dt .83  ;18: 1480 FA#
-0733   344F           00851     dt .79  ;19: 1568 SOL
-0734   344A           00852     dt .74  ;20: 1661 SOL#
-0735   3446           00853     dt .70  ;21: 1760 LA
-0736   3442           00854     dt .66  ;22: 1865 LA#
-0737   343F           00855     dt .63  ;23: 1967 SI
-0738   343B           00856     dt .59  ;24: 2093 DO
-                      00857     
-                      00858 ;5 première notes de rencontre du 3ième type
-0739                  00859 CE3K:
-0739   3406           00860     dt .6 ; nombre de notes
-                      00861     ; durée, note
-073A   3464 340E      00862     dt .100,.14
-073C   3464 3410      00863     dt .100,.16
-073E   3464 340C      00864     dt .100,.12
-0740   3464 3400      00865     dt .100,.0
-0742   34C8 3407      00866     dt .200,.7
-0744   34C8 3407      00867     dt .200,.7
-                      00868 
-                      00869 ; 3 première note de la sonate au clair de lune
-                      00870 ; de Beethoven
-0746                  00871 SOLDOMI:
-0746   3403           00872     dt .3 
-0747   3464 3407      00873     dt .100,.7   ;sol
-0749   3464 340C      00874     dt .100,.12  ;do
-074B   3464 3410      00875     dt .100,.16  ;mi
-                      00876 
-                      00877 ; hymne à la joie de Beethoven    
-074D                  00878 HYMNE:
-074D   343E           00879     dt .62 ;nombre de notes
-                      00880 ; 1ière mesure
-074E   3464 3409      00881     dt .100,.9   ; la
-0750   3464 3409      00882     dt .100,.9   ; la 
-0752   3464 340A      00883     dt .100,.10  ; si bémol
-0754   3464 340C      00884     dt .100,.12  ; do
-0756   3464 340C      00885     dt .100,.12  ; do
-0758   3464 340A      00886     dt .100,.10  ; si bémol
-075A   3464 3409      00887     dt .100,.9   ; la 
-075C   3464 3407      00888     dt .100,.7   ; sol
-075E   3464 3405      00889     dt .100,.5   ; fa
-0760   3464 3405      00890     dt .100,.5   ; fa
-0762   3464 3407      00891     dt .100,.7   ; sol
-0764   3464 3409      00892     dt .100,.9   ; la 
-MPASM 5.68                           MAT.ASM   9-21-2016  19:33:58         PAGE 20
+0278   3458           01010     dt .88  ;17: 1397 FA
+0279   3453           01011     dt .83  ;18: 1480 FA#
+027A   344F           01012     dt .79  ;19: 1568 SOL
+027B   344A           01013     dt .74  ;20: 1661 SOL#
+027C   3446           01014     dt .70  ;21: 1760 LA
+027D   3442           01015     dt .66  ;22: 1865 LA#
+027E   343F           01016     dt .63  ;23: 1967 SI
+027F   343B           01017     dt .59  ;24: 2093 DO
+0280   3400           01018     dt 0    ;25  silence
+                      01019 
+0281                  01020 duree: ; durée des notes
+                      01021     ; diviseur PS, temps
+                      01022     
+                      01023     
+                      01024 ;5 première notes de rencontre du 3ième type
+0281                  01025 ce3k:
+0281   3406           01026     dt .6 ; nombre de notes
+                      01027     ; durée, note
+0282   3464 340E      01028     dt .100,.14
+0284   3464 3410      01029     dt .100,.16
+0286   3464 340C      01030     dt .100,.12
+0288   3464 3400      01031     dt .100,.0
+028A   34C8 3407      01032     dt .200,.7
+028C   34C8 3407      01033     dt .200,.7
+                      01034 
+                      01035 ; 3 première note de la sonate au clair de lune
+                      01036 ; de Beethoven
+028E                  01037 soldomi:
+028E   3403           01038     dt .3 
+028F   3464 3407      01039     dt .100,.7   ;sol
+0291   3464 340C      01040     dt .100,.12  ;do
+0293   3464 3410      01041     dt .100,.16  ;mi
+                      01042 
+                      01043 ; partitions trouvées sur
+                      01044 ; http://www.apprendrelaflute.com    
+                      01045 ; hymne à la joie de Beethoven    
+0295                  01046 hymne_joie:
+0295   343E           01047     dt .62 ;nombre de notes
+                      01048 ; 1ière portée
+0296   3464 3409      01049     dt .100,.9   ; la
+0298   3464 3409      01050     dt .100,.9   ; la 
+029A   3464 340A      01051     dt .100,.10  ; si bémol
+029C   3464 340C      01052     dt .100,.12  ; do
+029E   3464 340C      01053     dt .100,.12  ; do
+02A0   3464 340A      01054     dt .100,.10  ; si bémol
+02A2   3464 3409      01055     dt .100,.9   ; la 
+02A4   3464 3407      01056     dt .100,.7   ; sol
+02A6   3464 3405      01057     dt .100,.5   ; fa
+02A8   3464 3405      01058     dt .100,.5   ; fa
+02AA   3464 3407      01059     dt .100,.7   ; sol
+02AC   3464 3409      01060     dt .100,.9   ; la 
+02AE   3496 3407      01061     dt .150,.7   ; sol
+02B0   3432 3405      01062     dt .50,.5   ; fa
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 24
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-0766   3496 3407      00893     dt .150,.7   ; sol
-0768   3432 3405      00894     dt .50,.5   ; fa
-076A   34C8 3405      00895     dt .200,.5   ; fa
-                      00896 ;2ième mesure
-076C   3464 3409      00897     dt .100,.9   ; la
-076E   3464 3409      00898     dt .100,.9   ; la 
-0770   3464 340A      00899     dt .100,.10  ; si bémol
-0772   3464 340C      00900     dt .100,.12  ; do
-0774   3464 340C      00901     dt .100,.12  ; do
-0776   3464 340A      00902     dt .100,.10  ; si bémol
-0778   3464 3409      00903     dt .100,.9   ; la 
-077A   3464 3407      00904     dt .100,.7   ; sol
-077C   3464 3405      00905     dt .100,.5   ; fa
-077E   3464 3405      00906     dt .100,.5   ; fa
-0780   3464 3407      00907     dt .100,.7   ; sol
-0782   3464 3409      00908     dt .100,.9   ; la 
-0784   3496 3407      00909     dt .150,.7   ; sol
-0786   3432 3405      00910     dt .50,.5   ; fa
-0788   34C8 3405      00911     dt .200,.5   ; fa
-                      00912 ;3ième mesure    
-078A   3464 3407      00913     dt .100,.7   ; sol
-078C   3464 3407      00914     dt .100,.7   ; sol
-078E   3464 3409      00915     dt .100,.9   ; la 
-0790   3464 3405      00916     dt .100,.5   ; fa
-0792   3464 3407      00917     dt .100,.7   ; sol
-0794   3432 3409      00918     dt .50,.9   ; la 
-0796   3432 340A      00919     dt .50,.10  ; si bémol
-0798   3464 3409      00920     dt .100,.9   ; la 
-079A   3464 3405      00921     dt .100,.5   ; fa
-079C   3464 3407      00922     dt .100,.7   ; sol
-079E   3432 3409      00923     dt .50,.9   ; la 
-07A0   3432 340A      00924     dt .50,.10  ; si bémol
-07A2   3464 3409      00925     dt .100,.9   ; la 
-07A4   3464 3407      00926     dt .100,.7   ; sol
-07A6   3464 3405      00927     dt .100,.5   ; fa
-07A8   3464 3407      00928     dt .100,.7   ; sol
-07AA   34C8 3400      00929     dt .200,.0   ; do
-                      00930 ;4ième mesure
-07AC   3464 3409      00931     dt .100,.9   ; la
-07AE   3464 3409      00932     dt .100,.9   ; la 
-07B0   3464 340A      00933     dt .100,.10  ; si bémol
-07B2   3464 340C      00934     dt .100,.12  ; do
-07B4   3464 340C      00935     dt .100,.12  ; do
-07B6   3464 340C      00936     dt .100,.12  ; do
-07B8   3464 340A      00937     dt .100,.10  ; si bémol
-07BA   3464 3409      00938     dt .100,.9   ; la 
-07BC   3464 3407      00939     dt .100,.7   ; sol
-07BE   3464 3405      00940     dt .100,.5   ; fa
-07C0   3464 3405      00941     dt .100,.5   ; fa
-07C2   3464 3407      00942     dt .100,.7   ; sol
-07C4   3496 3407      00943     dt .150,.7   ; sol
-07C6   3432 3405      00944     dt .50,.5   ; fa
-07C8   34C8 3405      00945     dt .200,.5   ; fa
-MPASM 5.68                           MAT.ASM   9-21-2016  19:33:58         PAGE 21
+02B2   34C8 3405      01063     dt .200,.5   ; fa
+                      01064 ;2ième portée
+02B4   3464 3409      01065     dt .100,.9   ; la
+02B6   3464 3409      01066     dt .100,.9   ; la 
+02B8   3464 340A      01067     dt .100,.10  ; si bémol
+02BA   3464 340C      01068     dt .100,.12  ; do
+02BC   3464 340C      01069     dt .100,.12  ; do
+02BE   3464 340A      01070     dt .100,.10  ; si bémol
+02C0   3464 3409      01071     dt .100,.9   ; la 
+02C2   3464 3407      01072     dt .100,.7   ; sol
+02C4   3464 3405      01073     dt .100,.5   ; fa
+02C6   3464 3405      01074     dt .100,.5   ; fa
+02C8   3464 3407      01075     dt .100,.7   ; sol
+02CA   3464 3409      01076     dt .100,.9   ; la 
+02CC   3496 3407      01077     dt .150,.7   ; sol
+02CE   3432 3405      01078     dt .50,.5   ; fa
+02D0   34C8 3405      01079     dt .200,.5   ; fa
+                      01080 ;3ième portée   
+02D2   3464 3407      01081     dt .100,.7   ; sol
+02D4   3464 3407      01082     dt .100,.7   ; sol
+02D6   3464 3409      01083     dt .100,.9   ; la 
+02D8   3464 3405      01084     dt .100,.5   ; fa
+02DA   3464 3407      01085     dt .100,.7   ; sol
+02DC   3432 3409      01086     dt .50,.9   ; la 
+02DE   3432 340A      01087     dt .50,.10  ; si bémol
+02E0   3464 3409      01088     dt .100,.9   ; la 
+02E2   3464 3405      01089     dt .100,.5   ; fa
+02E4   3464 3407      01090     dt .100,.7   ; sol
+02E6   3432 3409      01091     dt .50,.9   ; la 
+02E8   3432 340A      01092     dt .50,.10  ; si bémol
+02EA   3464 3409      01093     dt .100,.9   ; la 
+02EC   3464 3407      01094     dt .100,.7   ; sol
+02EE   3464 3405      01095     dt .100,.5   ; fa
+02F0   3464 3407      01096     dt .100,.7   ; sol
+02F2   34C8 3400      01097     dt .200,.0   ; do
+                      01098 ;4ième portée
+02F4   3464 3409      01099     dt .100,.9   ; la
+02F6   3464 3409      01100     dt .100,.9   ; la 
+02F8   3464 340A      01101     dt .100,.10  ; si bémol
+02FA   3464 340C      01102     dt .100,.12  ; do
+02FC   3464 340C      01103     dt .100,.12  ; do
+02FE   3464 340C      01104     dt .100,.12  ; do
+0300   3464 340A      01105     dt .100,.10  ; si bémol
+0302   3464 3409      01106     dt .100,.9   ; la 
+0304   3464 3407      01107     dt .100,.7   ; sol
+0306   3464 3405      01108     dt .100,.5   ; fa
+0308   3464 3405      01109     dt .100,.5   ; fa
+030A   3464 3407      01110     dt .100,.7   ; sol
+030C   3496 3407      01111     dt .150,.7   ; sol
+030E   3432 3405      01112     dt .50,.5   ; fa
+0310   34C8 3405      01113     dt .200,.5   ; fa
+                      01114  
+                      01115 ; mélodia (thème du film les jeux interdis)
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 25
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-                      00946    
-                      00947 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;    
-39E4 1E7F             00948     end
-MPASM 5.68                           MAT.ASM   9-21-2016  19:33:58         PAGE 22
+0312                  01116 melodia:
+0312   342B           01117     dt .43
+                      01118 ;1ière portée
+0313   3464 3409      01119     dt .100, .9 ; la
+0315   3464 3409      01120     dt .100, .9 ; la
+0317   3464 3409      01121     dt .100, .9 ; la
+0319   3464 3409      01122     dt .100, .9 ; la
+031B   3464 3407      01123     dt .100, .7 ; sol
+031D   3464 3405      01124     dt .100, .5 ; fa
+031F   3464 3405      01125     dt .100, .5 ; fa
+0321   3464 3404      01126     dt .100, .4 ; mi
+0323   3464 3402      01127     dt .100, .2 ; ré
+0325   3464 3402      01128     dt .100, .2 ; ré
+0327   3464 3405      01129     dt .100, .5 ; fa
+0329   3464 3409      01130     dt .100, .9 ; la
+                      01131 ;2ième portée
+032B   3464 340E      01132     dt .100, .14 ; ré
+032D   3464 340E      01133     dt .100, .14 ; ré
+032F   3464 340E      01134     dt .100, .14 ; ré
+0331   3464 340E      01135     dt .100, .14 ; ré
+0333   3464 340C      01136     dt .100, .12 ; do
+0335   3464 340A      01137     dt .100, .10 ; si bémol
+0337   3464 340A      01138     dt .100, .10 ; si bémol
+0339   3464 3409      01139     dt .100, .9 ; la
+033B   3464 3407      01140     dt .100, .7 ; sol
+033D   3464 3407      01141     dt .100, .7 ; sol
+033F   3464 3409      01142     dt .100, .9 ; la
+0341   3464 340A      01143     dt .100, .10 ; si bémol
+                      01144 ;3ième portée
+0343   3464 3409      01145     dt .100, .9 ; la
+0345   3464 340A      01146     dt .100, .10 ; si bémol
+0347   3464 3409      01147     dt .100, .9 ; la
+0349   3464 340D      01148     dt .100, .13 ; do#
+034B   3464 340A      01149     dt .100, .10 ; si bémol
+034D   3464 3409      01150     dt .100, .9 ; la
+034F   3464 3409      01151     dt .100, .9 ; la
+0351   3464 3407      01152     dt .100, .7 ; sol
+0353   3464 3405      01153     dt .100, .5 ; fa
+                      01154 ;4ième portée
+0355   3464 3405      01155     dt .100, .5 ; fa
+0357   3464 3404      01156     dt .100, .4 ; mi
+0359   3464 3402      01157     dt .100, .2 ; ré
+035B   3464 3404      01158     dt .100, .4 ; mi
+035D   3464 3404      01159     dt .100, .4 ; mi
+035F   3464 3404      01160     dt .100, .4 ; mi
+0361   3464 3404      01161     dt .100, .4 ; mi
+0363   3464 3405      01162     dt .100, .5 ; fa
+0365   3464 3404      01163     dt .100, .4 ; mi
+0367   34FF 3402      01164     dt .255, .2 ; ré
+                      01165 
+                      01166 ; à la claire fontaine    
+0369                  01167 claire_fontaine:
+                      01168 ;1ière portée
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 26
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0369   3429           01169     dt .41
+036A   34C8 3407      01170     dt .200, .7  ; sol
+036C   3464 3407      01171     dt .100, .7  ; sol
+036E   3464 340B      01172     dt .100, .11 ; si
+0370   3464 340B      01173     dt .100, .11 ; si
+0372   3464 3409      01174     dt .100, .9  ; la
+0374   3464 340B      01175     dt .100, .11 ; si
+0376   3464 3407      01176     dt .100, .7  ; sol
+0378   34C8 3407      01177     dt .200, .7  ; sol
+037A   3464 3407      01178     dt .100, .7  ; sol
+037C   3464 340B      01179     dt .100, .11 ; si
+037E   3464 340B      01180     dt .100, .11 ; si
+0380   3464 3409      01181     dt .100, .9  ; la
+0382   34C8 340B      01182     dt .200, .11 ; si
+                      01183 ;2ième portée
+0384   34C8 340B      01184     dt .200, .11 ; si
+0386   3464 340B      01185     dt .100, .11 ; si
+0388   3464 3409      01186     dt .100, .9  ; la
+038A   3464 3407      01187     dt .100, .7  ; sol
+038C   3464 340B      01188     dt .100, .11 ; si
+038E   3464 340E      01189     dt .100, .14 ; ré
+0390   3464 340B      01190     dt .100, .11 ; si
+0392   34C8 340E      01191     dt .200, .14 ; ré
+0394   3464 340E      01192     dt .100, .14 ; ré
+0396   3464 340B      01193     dt .100, .11 ; si
+0398   3464 3407      01194     dt .100, .7  ; sol
+039A   3464 340B      01195     dt .100, .11 ; si
+039C   34C8 3409      01196     dt .200, .9  ; la
+                      01197 ;3ième portée
+039E   34C8 3407      01198     dt .200, .7  ; sol
+03A0   3464 3407      01199     dt .100, .7  ; sol
+03A2   3464 340B      01200     dt .100, .11 ; si
+03A4   3464 340B      01201     dt .100, .11 ; si
+03A6   3432 3409      01202     dt .50, .9   ; la
+03A8   3432 3407      01203     dt .50, .7   ; sol
+03AA   3464 340B      01204     dt .100, .11 ; si
+03AC   3464 3407      01205     dt .100, .7  ; sol
+03AE   34C8 340B      01206     dt .200, .11 ; si
+03B0   3464 340B      01207     dt .100, .11 ; si
+03B2   3432 3409      01208     dt .50, .9  ; la
+03B4   3432 3407      01209     dt .50, .7  ; sol
+03B6   3464 340B      01210     dt .100, .11 ; si
+03B8   3464 3409      01211     dt .100, .9  ; la
+03BA   34C8 3407      01212     dt .200, .7  ; sol
+                      01213     
+                      01214 ;frère Jacques
+03BC                  01215 frere_jacques:    
+03BC   3420           01216     dt .32
+                      01217 ;1ière portée
+03BD   3464 3405      01218     dt .100, .5 ; fa
+03BF   3464 3407      01219     dt .100, .7  ; sol
+03C1   3464 3409      01220     dt .100, .9   ; la
+03C3   3464 3405      01221     dt .100, .5 ; fa
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 27
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      01222     
+03C5   3464 3405      01223     dt .100, .5 ; fa
+03C7   3464 3407      01224     dt .100, .7  ; sol
+03C9   3464 3409      01225     dt .100, .9   ; la
+03CB   3464 3405      01226     dt .100, .5 ; fa
+                      01227  
+03CD   3464 3409      01228     dt .100, .9   ; la
+03CF   3464 340A      01229     dt .100, .10 ; si bémol
+03D1   34C8 340C      01230     dt .200, .12 ; do
+                      01231     
+03D3   3464 3409      01232     dt .100, .9   ; la
+03D5   3464 340A      01233     dt .100, .10 ; si bémol
+03D7   34C8 340C      01234     dt .200, .12 ; do
+                      01235 ;2ième portée    
+03D9   344B 340C      01236     dt .75,  .12 ; do
+03DB   3419 340E      01237     dt .25,  .14 ; ré
+03DD   3432 340C      01238     dt .50,  .12 ; do
+03DF   3432 340A      01239     dt .50,  .10 ; si bémol
+03E1   3464 3409      01240     dt .100, .9  ; la
+03E3   3464 3405      01241     dt .100, .5  ; fa
+                      01242 
+03E5   344B 340C      01243     dt .75,  .12 ; do
+03E7   3419 340E      01244     dt .25,  .14 ; ré
+03E9   3432 340C      01245     dt .50,  .12 ; do
+03EB   3432 340A      01246     dt .50,  .10 ; si bémol
+03ED   3464 3409      01247     dt .100, .9  ; la
+03EF   3464 3405      01248     dt .100, .5  ; fa
+                      01249 
+03F1   3464 3405      01250     dt .100, .5  ; fa
+03F3   3464 340C      01251     dt .100, .12 ; do
+03F5   34C8 3405      01252     dt .200, .5  ; fa
+                      01253 
+03F7   3464 3405      01254     dt .100, .5   ; fa
+03F9   3464 340C      01255     dt .100,  .12 ; do
+03FB   34C8 3405      01256     dt .200, .5   ; fa
+                      01257 
+                      01258 ;J'ai du bon tabac dans ma tabatière
+03FD                  01259 bon_tabac:
+03FD   341E           01260     dt .30
+                      01261 ;1ière portée
+03FE   3464 3407      01262     dt .100, .7  ; sol
+0400   3464 3409      01263     dt .100, .9   ; la
+0402   3464 340B      01264     dt .100, .11 ; si
+0404   3464 3407      01265     dt .100, .7  ; sol
+                      01266     
+0406   34C8 3409      01267     dt .200, .9   ; la
+0408   3464 3409      01268     dt .100, .9   ; la
+040A   3464 340B      01269     dt .100, .11 ; si
+                      01270     
+040C   34C8 340C      01271     dt .200,  .12 ; do
+040E   34C8 340C      01272     dt .200,  .12 ; do
+                      01273     
+0410   34C8 340B      01274     dt .200, .11 ; si
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 28
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0412   34C8 340B      01275     dt .200, .11 ; si
+                      01276 ;2ième portée
+0414   3464 3407      01277     dt .100, .7  ; sol
+0416   3464 3409      01278     dt .100, .9   ; la
+0418   3464 340B      01279     dt .100, .11 ; si
+041A   3464 3407      01280     dt .100, .7  ; sol
+                      01281     
+041C   34C8 3409      01282     dt .200, .9   ; la
+041E   3464 3409      01283     dt .100, .9   ; la
+0420   3464 340B      01284     dt .100, .11 ; si
+                      01285     
+0422   34C8 340C      01286     dt .200,  .12 ; do
+0424   34C8 340E      01287     dt .200,  .14 ; ré
+                      01288     
+0426   34FF 3407      01289     dt .255,  .7  ; sol
+                      01290 ;3ième portée
+0428   34C8 340E      01291     dt .200,  .14 ; ré
+042A   3464 340E      01292     dt .100,  .14 ; ré
+042C   3464 340C      01293     dt .100,  .12 ; do
+                      01294        
+042E   34C8 340B      01295     dt .200, .11 ; si
+0430   3464 3409      01296     dt .100, .9   ; la
+0432   3464 340B      01297     dt .100, .11 ; si
+                      01298  
+0434   34C8 340C      01299     dt .200,  .12 ; do
+0436   34C8 340E      01300     dt .200,  .14 ; ré
+                      01301     
+0438   34FF 3409      01302     dt .255,  .9  ; la    
+                      01303 
+                      01304 ; god save de queen    
+043A                  01305 gstq:    
+043A   3429           01306     dt .41
+                      01307 ;1ère portée    
+043B   3464 340C      01308     dt .100, .12 ; do
+043D   3464 340C      01309     dt .100, .12 ; do
+043F   3464 340E      01310     dt .100, .14 ; ré
+                      01311     
+0441   3496 340B      01312     dt .150, .11 ; si
+0443   3432 340C      01313     dt .50,  .12 ; do
+0445   3464 340E      01314     dt .100, .14 ; ré
+                      01315     
+0447   3464 3410      01316     dt .100, .16 ; mi
+0449   3464 3410      01317     dt .100, .16 ; mi
+044B   3464 3411      01318     dt .100, .17 ; fa
+                      01319     
+044D   3496 3410      01320     dt .150, .16 ; mi
+044F   3432 340E      01321     dt .50,  .14 ; ré
+0451   3464 340C      01322     dt .100, .12 ; do
+                      01323 
+                      01324 ;2ième portée
+0453   3464 340E      01325     dt .100, .14 ; ré
+0455   3464 340C      01326     dt .100, .12 ; do
+0457   3464 340B      01327     dt .100, .11 ; si
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 29
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      01328     
+0459   34FF 340C      01329     dt .255, .12 ; do
+                      01330     
+045B   3464 3413      01331     dt .100, .19 ; sol
+045D   3464 3413      01332     dt .100, .19 ; sol
+045F   3464 3413      01333     dt .100, .19 ; sol
+                      01334 
+0461   3496 3413      01335     dt .150, .19 ; sol
+0463   3432 3411      01336     dt .50,  .17 ; fa
+0465   3464 3410      01337     dt .100, .16 ; mi
+                      01338     
+                      01339 ;3ième portée
+0467   3464 3411      01340     dt .100, .17 ; fa
+0469   3464 3411      01341     dt .100, .17 ; fa
+046B   3464 3411      01342     dt .100, .17 ; fa
+                      01343 
+046D   3496 3411      01344     dt .150, .17 ; fa
+046F   3432 3410      01345     dt .50,  .16 ; mi
+0471   3464 340E      01346     dt .100, .14 ; ré
+                      01347     
+0473   3464 3410      01348     dt .100, .16 ; mi
+0475   3432 3411      01349     dt .50,  .17 ; fa
+0477   3432 3410      01350     dt .50,  .16 ; mi
+0479   3432 340E      01351     dt .50,  .14 ; ré
+047B   3432 340C      01352     dt .50,  .12 ; do
+                      01353     
+047D   3496 3410      01354     dt .150, .16 ; mi
+047F   3432 3411      01355     dt .50,  .17 ; fa
+0481   3464 3413      01356     dt .100, .19 ; sol
+                      01357     
+                      01358 ;4ième portée
+0483   3432 3415      01359     dt .50,  .21 ; la
+0485   3432 3411      01360     dt .50,  .17 ; fa
+0487   3464 3410      01361     dt .100, .16 ; mi
+0489   3464 340E      01362     dt .100, .14 ; ré
+                      01363     
+048B   34FF 340C      01364     dt .255, .12 ; do
+                      01365 
+                      01366 ;greensleeves
+048D                  01367 greensleeves:
+048D   3448           01368     dt .72
+                      01369 ;1ière portée
+                      01370 ;    dt .100, .25  ; silence
+                      01371 ;    dt .100, .25  ; silence
+048E   3464 340E      01372     dt .100, .14  ; ré
+                      01373     
+0490   34C8 3411      01374     dt .200, .17  ; fa
+0492   3464 3413      01375     dt .100, .19  ; sol
+                      01376     
+0494   3496 3415      01377     dt .150, .21  ; la
+0496   3432 3414      01378     dt .50,  .20  ; si bémol
+0498   3464 3415      01379     dt .100, .21  ; la
+                      01380     
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 30
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+049A   34C8 3413      01381     dt .200, .19  ; sol
+049C   3464 3410      01382     dt .100, .16  ; mi
+                      01383     
+049E   3496 340C      01384     dt .150, .12  ; do
+04A0   3432 340E      01385     dt .50,  .14  ; ré
+04A2   3464 3410      01386     dt .100, .16  ; mi
+                      01387     
+04A4   34C8 3411      01388     dt .200, .17  ; fa
+04A6   3464 340E      01389     dt .100, .14  ; ré
+                      01390 ;2ième portée
+04A8   3496 340E      01391     dt .150, .14  ; ré
+04AA   3432 340D      01392     dt .50,  .13  ; do#
+04AC   3464 340E      01393     dt .100, .14  ; ré
+                      01394     
+04AE   34C8 3410      01395     dt .200, .16  ; mi
+04B0   3464 340D      01396     dt .100, .13  ; do#
+                      01397     
+04B2   34C8 3409      01398     dt .200, .9   ; la
+04B4   3464 340E      01399     dt .100, .14  ; ré
+                      01400     
+04B6   34C8 3411      01401     dt .200, .17  ; fa
+04B8   3464 3413      01402     dt .100, .19  ; sol
+                      01403     
+04BA   3496 3415      01404     dt .150, .21  ; la
+04BC   3432 3414      01405     dt .50,  .20  ; si bémol
+04BE   3464 3415      01406     dt .100, .21  ; la
+                      01407     
+04C0   34C8 3413      01408     dt .200, .19  ; sol
+04C2   3464 3410      01409     dt .100, .16  ; mi
+                      01410 ;3ième portée
+04C4   3496 340C      01411     dt .150, .12  ; do
+04C6   3432 340E      01412     dt .50,  .14  ; ré
+04C8   3464 3410      01413     dt .100, .16  ; mi
+                      01414     
+04CA   3496 3411      01415     dt .150, .17  ; fa
+04CC   3432 3410      01416     dt .50,  .16  ; mi
+04CE   3464 340E      01417     dt .100, .14  ; ré
+                      01418     
+04D0   3496 340D      01419     dt .150, .13  ; do#
+04D2   3432 340B      01420     dt .50,  .11  ; si
+04D4   3464 340D      01421     dt .100, .13  ; do#
+                      01422     
+04D6   34C8 340E      01423     dt .200, .14  ; ré
+04D8   3464 340E      01424     dt .100, .14  ; ré
+                      01425     
+04DA   34FF 3418      01426     dt .255, .24  ; do  devrait-être .300, .24
+                      01427 ;    dt .45,  .25  ; problème
+                      01428     
+04DC   3496 3418      01429     dt .150, .24  ; do
+04DE   3432 3417      01430     dt .50,  .23  ; si
+04E0   3464 3415      01431     dt .100, .21  ; la
+                      01432     
+04E2   34C8 3413      01433     dt .200, .19  ; sol
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 31
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+04E4   3464 3410      01434     dt .100, .16  ; mi
+                      01435 ;4ième portée
+04E6   3496 340C      01436     dt .150, .12  ; do
+04E8   3432 340E      01437     dt .50,  .14  ; ré
+04EA   3464 3410      01438     dt .100, .16  ; mi
+                      01439     
+04EC   34C8 3411      01440     dt .200, .17  ; fa
+04EE   3464 340E      01441     dt .100, .14  ; ré
+                      01442     
+04F0   3496 340E      01443     dt .150, .14  ; ré
+04F2   3432 340D      01444     dt .50,  .13  ; do#
+04F4   3464 340E      01445     dt .100, .14  ; ré
+                      01446     
+04F6   34C8 3410      01447     dt .200, .16  ; mi
+04F8   3464 340D      01448     dt .100, .13  ; do#
+                      01449     
+04FA   34FF 3409      01450     dt .255, .9   ; la
+                      01451  ;   dt .45,  .25  ; silence
+                      01452     
+04FC   34FF 3418      01453     dt .255, .24  ; do
+                      01454 ;    dt .45,  .25  ; silence
+                      01455     
+04FE   3496 3418      01456     dt .150, .24  ; do
+0500   3432 3417      01457     dt .50,  .23  ; si
+0502   3464 3415      01458     dt .100, .21  ; la
+                      01459     
+0504   34C8 3413      01460     dt .200, .19  ; sol
+0506   3464 3410      01461     dt .100, .16  ; mi
+                      01462     
+0508   3496 340C      01463     dt .150, .12  ; do
+050A   3432 340E      01464     dt .50,  .14  ; ré
+050C   3464 3410      01465     dt .100, .16  ; mi
+                      01466     
+050E   3496 3411      01467     dt .150, .17  ; fa
+0510   3432 3410      01468     dt .50,  .16  ; mi
+0512   3464 340E      01469     dt .100, .14  ; ré
+                      01470     
+0514   3496 340D      01471     dt .150, .13  ; do#
+0516   3432 340B      01472     dt .50,  .11  ; si
+0518   3464 340D      01473     dt .100, .13  ; do#
+                      01474     
+051A   34FF 340E      01475     dt .255, .14  ; ré
+                      01476 ;    dt .45,  .25  ; silence
+                      01477     
+051C   34FF 340E      01478     dt .255, .14  ; ré
+                      01479     
+                      01480     
+                      01481     
+                      01482     
+                      01483 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;    
+39E4 1E7F             01484     end
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 32
 
 
 SYMBOL TABLE
@@ -1236,7 +1874,7 @@ ADRES                             0000009B
 ADRESH                            0000009C
 ADRESL                            0000009B
 AHEN                              00000001
-ALARM_TABLE                       SOLDOMI
+ALARM_TABLE                       soldomi
 ANSA0                             00000000
 ANSA1                             00000001
 ANSA2                             00000002
@@ -1246,7 +1884,7 @@ ANSC1                             00000001
 ANSC2                             00000002
 ANSC3                             00000003
 ANSC4                             00000004
-MPASM 5.68                           MAT.ASM   9-21-2016  19:33:58         PAGE 23
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 33
 
 
 SYMBOL TABLE
@@ -1305,7 +1943,7 @@ CCP1M0                            00000000
 CCP1M1                            00000001
 CCP1M2                            00000002
 CCP1M3                            00000003
-MPASM 5.68                           MAT.ASM   9-21-2016  19:33:58         PAGE 24
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 34
 
 
 SYMBOL TABLE
@@ -1334,7 +1972,6 @@ CCPR2H                            00000299
 CCPR2L                            00000298
 CDAFVR0                           00000002
 CDAFVR1                           00000003
-CE3K                              00000739
 CFGS                              00000006
 CHS0                              00000002
 CHS1                              00000003
@@ -1364,13 +2001,13 @@ F                                 00000001
 F2MHZ                             0000000C
 F8MHZ                             0000000E
 FREE                              00000004
-MPASM 5.68                           MAT.ASM   9-21-2016  19:33:58         PAGE 25
+FSR0                              00000004
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 35
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-FSR0                              00000004
 FSR0H                             00000005
 FSR0H_SHAD                        00000FE9
 FSR0L                             00000004
@@ -1392,7 +2029,6 @@ GO_NOT_DONE                       00000001
 HFIOFL                            00000003
 HFIOFR                            00000004
 HFIOFS                            00000000
-HYMNE                             0000074D
 ICDBK0H                           00000F9E
 INDF0                             00000000
 INDF1                             00000001
@@ -1423,14 +2059,14 @@ IOCAF3                            00000003
 IOCAF4                            00000004
 IOCAF5                            00000005
 IOCAN                             00000392
-MPASM 5.68                           MAT.ASM   9-21-2016  19:33:58         PAGE 26
+IOCAN0                            00000000
+IOCAN1                            00000001
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 36
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-IOCAN0                            00000000
-IOCAN1                            00000001
 IOCAN2                            00000002
 IOCAN3                            00000003
 IOCAN4                            00000004
@@ -1482,14 +2118,14 @@ LATC2                             00000002
 LATC3                             00000003
 LATC4                             00000004
 LATC5                             00000005
-MPASM 5.68                           MAT.ASM   9-21-2016  19:33:58         PAGE 27
+LED_CONN                          00000247
+LFIOFR                            00000001
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 37
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-LED_CONN                          00000700
-LFIOFR                            00000001
 LWLO                              00000005
 MFIOFR                            00000002
 MSK0                              00000000
@@ -1500,6 +2136,7 @@ MSK4                              00000004
 MSK5                              00000005
 MSK6                              00000006
 MSK7                              00000007
+NOMBRE_MELODIES                   00000008
 NOT_BOR                           00000000
 NOT_PD                            00000003
 NOT_POR                           00000001
@@ -1541,13 +2178,13 @@ OSCTUNE                           00000098
 OSTS                              00000005
 P                                 00000004
 PCIE                              00000006
-MPASM 5.68                           MAT.ASM   9-21-2016  19:33:58         PAGE 28
+PCL                               00000002
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 38
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-PCL                               00000002
 PCLATH                            0000000A
 PCLATH_SHAD                       00000FE7
 PCON                              00000096
@@ -1600,13 +2237,13 @@ RC3PPS                            00000EA3
 RC4                               00000004
 RC4PPS                            00000EA4
 RC5                               00000005
-MPASM 5.68                           MAT.ASM   9-21-2016  19:33:58         PAGE 29
+RC5PPS                            00000EA5
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 39
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-RC5PPS                            00000EA5
 RCEN                              00000003
 RD                                00000000
 RESTE                             ACAL
@@ -1616,7 +2253,7 @@ Reserved                          00000000
 S                                 00000003
 SBCDE                             00000002
 SBOREN                            00000007
-SCALE                             00000720
+SCALE                             00000267
 SCIE                              00000005
 SCS0                              00000000
 SCS1                              00000001
@@ -1649,7 +2286,6 @@ SLRC5                             00000005
 SLRCONA                           0000030C
 SLRCONC                           0000030E
 SMP                               00000007
-SOLDOMI                           00000746
 SOSCR                             00000007
 SPLLEN                            00000007
 SSP1ADD                           00000212
@@ -1659,14 +2295,14 @@ SSP1ADD2                          00000002
 SSP1ADD3                          00000003
 SSP1ADD4                          00000004
 SSP1ADD5                          00000005
-MPASM 5.68                           MAT.ASM   9-21-2016  19:33:58         PAGE 30
+SSP1ADD6                          00000006
+SSP1ADD7                          00000007
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 40
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-SSP1ADD6                          00000006
-SSP1ADD7                          00000007
 SSP1BUF                           00000211
 SSP1BUF0                          00000000
 SSP1BUF1                          00000001
@@ -1718,14 +2354,14 @@ STATUS                            00000003
 STATUS_SHAD                       00000FE4
 STKOVF                            00000007
 STKPTR                            00000FED
-MPASM 5.68                           MAT.ASM   9-21-2016  19:33:58         PAGE 31
+STKUNF                            00000006
+SWDTEN                            00000000
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 41
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-STKUNF                            00000006
-SWDTEN                            00000000
 T0CKIPPS                          00000E11
 T0CS                              00000005
 T0IE                              00000005
@@ -1777,14 +2413,14 @@ TMR1ON                            00000000
 TMR1_DLY                          00008300
 TMR2                              0000001A
 TMR2IE                            00000001
-MPASM 5.68                           MAT.ASM   9-21-2016  19:33:58         PAGE 32
+TMR2IF                            00000001
+TMR2ON                            00000002
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 42
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-TMR2IF                            00000001
-TMR2ON                            00000002
 TONE_CCPCON                       CCP1CON
 TONE_CCPRL                        CCPR1L
 TONE_LAT                          LATA
@@ -1793,6 +2429,7 @@ TONE_PIN                          RA1
 TONE_PIN_PPS                      RA1PPS
 TONE_TRIS                         TRISA
 TONE_WPU                          WPUA
+TOS                               INDF1
 TOSH                              00000FEF
 TOSL                              00000FEE
 TRIGSEL0                          00000004
@@ -1836,13 +2473,13 @@ WPUA0                             00000000
 WPUA1                             00000001
 WPUA2                             00000002
 WPUA3                             00000003
-MPASM 5.68                           MAT.ASM   9-21-2016  19:33:58         PAGE 33
+WPUA4                             00000004
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 43
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-WPUA4                             00000004
 WPUA5                             00000005
 WPUC                              0000020E
 WPUC0                             00000000
@@ -1866,13 +2503,16 @@ ZCD1POL                           00000004
 ZCDIE                             00000004
 ZCDIF                             00000004
 Z_SHAD                            00000002
-_.org_1_0076                      00000076
-_.org_1_008C                      0000008C
-_.org_1_00A4                      000000A4
-_.org_1_00A6                      000000A6
-_.org_1_012F                      0000012F
-_.org_1_0142                      00000142
-_.org_1_018E                      0000018E
+_.org_1_0080                      00000080
+_.org_1_0096                      00000096
+_.org_1_00AE                      000000AE
+_.org_1_00B0                      000000B0
+_.org_1_0102                      00000102
+_.org_1_010C                      0000010C
+_.org_1_0115                      00000115
+_.org_1_0151                      00000151
+_.org_1_0164                      00000164
+_.org_1_01B0                      000001B0
 _BOREN_NSLEEP                     00003DFF
 _BOREN_OFF                        000039FF
 _BOREN_ON                         00003FFF
@@ -1893,14 +2533,14 @@ _FOSC_INTOSC                      00003FFC
 _IDLOC0                           00008000
 _IDLOC1                           00008001
 _IDLOC2                           00008002
-_IDLOC3                           00008003
-_LPBOR_OFF                        00003FFF
-MPASM 5.68                           MAT.ASM   9-21-2016  19:33:58         PAGE 34
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 44
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+_IDLOC3                           00008003
+_LPBOR_OFF                        00003FFF
 _LPBOR_ON                         000037FF
 _LVP_OFF                          00001FFF
 _LVP_ON                           00003FFF
@@ -1925,74 +2565,108 @@ _WRT_OFF                          00003FFF
 _ZCDDIS_OFF                       00003F7F
 _ZCDDIS_ON                        00003FFF
 __16F1703                         00000001
-add_time                          0000007C
-alarm                             000000C0
+add_time                          00000086
+alarm                             000000CA
 alarm_disable                     
-alarm_loop                        000000CB
-beep                              0000008E
-cancellation                      000000B7
-delay                             0000012C
+alarm_loop                        000000D4
+attack                            000000FF
+beep                              00000098
+boite_a_musique                   000001EC
+bon_tabac                         000003FD
+cancellation                      000000C1
+case                              
+ce3k                              00000281
+claire_fontaine                   00000369
+decay                             0000010D
+delay                             0000014E
 disable_timer                     00000024
-disp_test                         00000194
+disp_test                         000001D3
 display_disable                   
 display_enable                    
-div15                             0000014B
-div15_1                           00000157
-div15_2                           0000015E
-div15_3                           00000165
-div15_4                           0000016C
-div15_exit                        00000171
+div15                             0000016D
+div15_1                           00000179
+div15_2                           00000180
+div15_3                           00000187
+div15_4                           0000018E
+div15_exit                        00000193
 drop                              
 dup                               
-eveil_normal                      00000059
-flags                             00000008
-infusion                          00000094
-init                              00000029
-isr                               00000004
-isr_exit                          00000028
-isr_timer0                        0000001E
-isr_timer1                        0000000D
-last_pos                          0000000A
-light_segment                     000000FE
-MPASM 5.68                           MAT.ASM   9-21-2016  19:33:58         PAGE 35
+duree                             00000281
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 45
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
-main                              0000004B
+eveil_normal                      00000063
+flags                             00000008
+frere_jacques                     000003BC
+greensleeves                      0000048D
+gstq                              0000043A
+hymne_joie                        00000295
+infusion                          0000009E
+init                              00000029
+isr                               00000004
+isr_exit                          00000028
+isr_timer0                        0000001E
+isr_timer1                        0000000D
+joue                              00000231
+last_pos                          0000000A
+light_segment                     0000011E
+main                              00000054
+melodia                           00000312
 msec4                             00000006
-oeuf_loop                         000001B3
+musique                           0000000E
+musique_0                         0000022D
+musique_1                         00000228
+musique_2                         00000223
+musique_3                         0000021E
+musique_4                         00000219
+musique_5                         00000214
+musique_6                         0000020F
+no_incr                           000001BB
+notes_loop                        00000233
 over                              
-pause_msec                        0000018C
+pause_msec                        000001AE
 popw                              
 pushw                             
-pwm_loop                          000000AB
+pwm_loop                          000000B5
 pwm_period                        00000007
+rand                              000001B2
+rseed                             0000000B
 rst                               00000000
 secondes                          00000005
-self_test                         00000190
-servo_pos                         0000010F
-servo_pos_exit                    0000013D
-servo_pos_loop                    00000122
-servo_test                        000001A8
+self_test                         000001CF
+servo_pos                         00000131
+servo_pos_exit                    0000015F
+servo_pos_loop                    00000144
+servo_test                        000001E7
+soldomi                           0000028E
 stack                             00000000
-start_msec4_tmr                   00000183
-start_timer                       00000173
+start_msec4_tmr                   000001A5
+start_timer                       00000195
+sustain                           0000010A
+swap                              
 temp                              00000009
 test_tmr1                         00000008
-timeout                           000000BA
-timeset                           00000068
-timeset_exit                      00000084
-timeset_wait_btn                  0000006B
-tone                              000000DC
-tone_test                         000001A3
+timeout                           000000C4
+timeset                           00000072
+MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 46
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+timeset_exit                      0000008E
+timeset_wait_btn                  00000075
+tone                              000000E5
+tone_end                          00000117
+tone_test                         000001E2
 trempage                          00000004
-un_oeuf                           000001AD
-wait_loop                         0000009A
+wait_loop                         000000A4
 
 Errors   :     0
 Warnings :     0 reported,     0 suppressed
-Messages :    54 reported,     0 suppressed
+Messages :    62 reported,     0 suppressed
 
 

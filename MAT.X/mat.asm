@@ -100,8 +100,10 @@
 #define F_SEC    0 ; minuterie seconde 1=active, 0=inactive
 #define F_MSEC4  1 ; minuterie msec4 1=active, 0=inactive    
 
-#define ALARM_TABLE  SOLDOMI    
+#define ALARM_TABLE  soldomi   
 
+#define TOS INDF1  ; top of stack
+    
 ;#define DEBUG  
     
 ;;;;;;;;;;;;;;    
@@ -118,6 +120,9 @@
     constant SERVO_POS_BAS=.52       ; " 
     constant SERVO_POS_HAUT=.60      ; "
     constant SERVO_DLY=.3  ; contrôle vitesse de rotation
+    
+    constant NOMBRE_MELODIES=.8 ; nombre de mélodies pour la boite à musique
+    
 ;;;;;;;;;;;;;;    
 ; macros    
 ;;;;;;;;;;;;;;
@@ -130,7 +135,7 @@ popw macro ; dépile dans WREG ( n -- )
     moviw FSR1--
     endm
 drop macro ; jette le sommet de la pile
-    addfsr FSR1,-1&0x3f
+    addfsr FSR1,0x3f
     endm
     
 over macro ; copie 2ième élément de la pile  ( n2 n1 - n2 n1 n2)
@@ -142,7 +147,14 @@ dup macro ; copie TOS   ( n -- n n )
     moviw 0[FSR1]
     movwi ++FSR1
     endm
-    
+
+swap macro ; ( n1 n2 -- n2 n1 )
+   popw
+   xorwf INDF,F
+   xorwf INDF,W
+   xorwf INDF,F
+   pushw
+   endm
     
 ; toutes les pins du port DISP_PORT sont mises en mode entrée
 ; avec weak pullup actif
@@ -175,6 +187,13 @@ alarm_disable macro
     banksel TONE_CON
     bcf TONE_CON, TONE_OE ; désactive sortie PWM
     endm
+
+case macro n, addr
+    xorlw n
+    skpnz
+    bra addr
+    xorlw n
+    endm
     
 ;;;;;;;;;;;;;;
 ; variables
@@ -195,6 +214,9 @@ pwm_period res 1 ; période pour contrôler l'intensité du segment LED
 flags res 1; indicateurs booléens.
 temp res 1 ; variable temporaire 
 last_pos res 1 ; dernière commande envoyée au servo-moteur 
+rseed res 3  ; graine générateur pseudo-hasard
+musique res 1 ; indique quelle mélodie jouer
+ 
 ;;;;;;;;;;;;;;
 ; code
 ;;;;;;;;;;;;;;
@@ -294,15 +316,27 @@ init:
     bcf SERVO_TRIS, SERVO_PIN
     banksel SERVO_LAT
     bcf SERVO_LAT, SERVO_PIN
+; configuration de la sortie pour son
+    banksel TONE_TRIS
+    bcf TONE_TRIS, TONE_PIN ; broche en mode sortie
 ;variables à zéro
     clrf flags 
     clrf secondes
     clrf msec4
+    clrf musique
+; initialise rseed    
+    movlw 3
+    movwf rseed
+    lslf WREG
+    movwf rseed+1
+    lslf WREG
+    movwf rseed+2
+    
     movlw SERVO_POS_HAUT
     movwf last_pos
     call self_test
-
 main:
+    call rand
 ; activation interruption sur bouton START enfoncé
 ; ceci pour permettre la sortie du mode SLEEP en enfoncant ce bouton    
     banksel START_IOCF
@@ -318,8 +352,8 @@ main:
     banksel TIMESET_PORT
     btfsc TIMESET_PORT,TIMESET_PIN
     bra eveil_normal
-;oeuf caché
-    call un_oeuf
+;fonction cachée
+    call boite_a_musique
     bra main
 eveil_normal:  
     movlw .15
@@ -452,7 +486,7 @@ alarm:
 ; initialition pointeur table CE3K
     movlw high ALARM_TABLE
     movwf FSR0H
-    bsf FSR0H,7
+;    bsf FSR0H,7
     movlw low ALARM_TABLE
     movwf FSR0L
     moviw FSR0++
@@ -478,7 +512,7 @@ alarm_loop:
     movfw FSR0H
     movwf ACAH
     call tone
-    decfsz INDF1
+    decfsz TOS
     bra alarm_loop
     popw
     return
@@ -491,42 +525,67 @@ tone:
 ; prépare FSR0 pour accéder table SCALE
     movlw high SCALE
     movwf FSR0H
-    bsf FSR0H,7
+;    bsf FSR0H,7
     movlw low SCALE
     movwf FSR0L
 ;ajoute l'indice de la note à FSR0    
     popw
     addwf FSR0L
-    moviw 0[FSR0]
+    movlw 0
+    addcf FSR0H
+    movfw INDF0
     banksel PR2
     movwf PR2  ;la valeur retirée de SCALE détermine la période PWM
-    pushw	;sauvegarde sur la pile temporairement
-    lsrf WREG   ; cette valeur divisé par 2 va dans CCPxL
-    banksel TONE_CCPRL
-    movwf TONE_CCPRL   ; les 6 bits les plus significatifs du rapport cyclique
-    popw
-    andlw 1    ; les 2 bites les moins significatifs du rapport cyclique
-    lslf WREG
-    swapf WREG ; dans bits 4 et 5 de CCPxCON
-    iorlw (3<<CCP1M2) ; mode PWM
-    movwf TONE_CCPCON  ; PWM configuré
-; configuration de la sortie pour le PWM
-    banksel TONE_TRIS
-    bcf TONE_TRIS, TONE_PIN ; broche en mode sortie
+    banksel TONE_CCPCON
+    movlw (0xC<<CCP1M0)|(3<<DC1B0)
+    movwf TONE_CCPCON
+    clrf TONE_CCPRL   ; les 6 bits les plus significatifs du rapport cyclique
 ; activation minuterie TIMER2
     banksel T2CON
     movlw (2<<T2CKPS0)|(1<<TMR2ON)
     movwf T2CON ; préscale 16 et TIMER2 on.
-    popw     ; durée
-    call pause_msec  
-;désactive tone pwm
+    popw ; durée note
+    call start_msec4_tmr
+    banksel PR2
+    lsrf PR2,W
+    lsrf WREG
+    lsrf WREG ; rapport cyclique maximal PR2/8
+    pushw
+attack:    
+    banksel PIR1
+    bcf PIR1,TMR2IF
+    btfss PIR1,TMR2IF
+    bra $-1
+    banksel TONE_CCPRL
+    movlw 4
+    addwf TONE_CCPRL
+    movfw TONE_CCPRL
+    subwf TOS,W
+    skpnc
+    bra attack
+sustain:
+    popw
+    btfsc flags, F_MSEC4
+    bra $-1
+decay: ; décroissance rapport cyclique
+    banksel TONE_CCPRL
+    movlw 2
+    subwf TONE_CCPRL,F
+    skpc
+    bra tone_end
+    banksel PIR1
+    bcf PIR1, TMR2IF
+    btfss PIR1,TMR2IF
+    bra $-1 ; attent fin cycle PWM
+    bra decay
+tone_end:    
 ;arrête TIMER2
     banksel T2CON
     bcf T2CON, TMR2ON
     banksel TONE_CCPCON
     clrf TONE_CCPCON
-    banksel TONE_TRIS
-    bsf TONE_TRIS, TONE_PIN
+    banksel TONE_LAT
+    bcf TONE_LAT, TONE_PIN
     return
     
 ; allume un segment de la barre LED
@@ -538,12 +597,14 @@ light_segment:
 ; initialise FSR0 pour pointer sur la table LED_CON
     movlw high LED_CONN
     movwf FSR0H
-    bsf FSR0H, 7
+;    bsf FSR0H, 7
     movlw low LED_CONN
     movwf FSR0L
     popw
     lslf WREG   ; segment * 2
     addwf FSR0L ; ajuste le pointeur de table
+    movlw 0
+    addcf FSR0H 
     movfw INDF0  ; obtient valeur sortie PORT
     banksel DISP_LAT
     movwf DISP_LAT
@@ -569,15 +630,15 @@ servo_pos:
     pushw
 ; contrôle des limites    
     movlw SERVO_POS_BAS
-    subwf INDF1,W
+    subwf TOS,W
     movlw SERVO_POS_BAS
     skpc
-    movwf INDF1
+    movwf TOS
     movlw SERVO_POS_HAUT
-    subwf INDF1,W
+    subwf TOS,W
     movlw SERVO_POS_HAUT
     skpnc
-    movwf INDF1
+    movwf TOS
 ; pour obtenir une période de 50 Hertz sur TIMER2 il faut réduire
 ; Fosc à 2Mhz
     banksel OSCCON
@@ -615,11 +676,11 @@ delay:
     bra $-1
     decfsz ACAL,F
     bra delay
-    movfw INDF1
+    movfw TOS
     subwf last_pos,W
     skpnz
     bra servo_pos_exit
-    movfw INDF1
+    movfw TOS
     subwf last_pos,W
     skpc
     incf last_pos,F
@@ -745,6 +806,46 @@ pause_msec:
     btfsc flags, F_MSEC4
     bra $-1
     return
+
+;générateur pseudo-hasard
+;modifie variable rseed
+; fonction itérative
+;   1) si rseed est impaire, incrémente rseed
+;   2) multiplie rseed par 3/2
+;   3) recommence à 1    
+    radix dec
+rand:
+    btfss rseed,1 
+    bra no_incr
+    movlw 1         
+    addwf rseed, F
+    clrf WREG
+    addcf rseed+1,F
+    addcf rseed+2,F
+no_incr:    
+; empile rseed*2    
+    lslf rseed,W
+    pushw 
+    rlf rseed+1,W
+    pushw
+    rlf rseed+2,W
+    pushw
+; additionne rseed*2 à rseed    
+    moviw -2[FSR1]
+    addwf rseed,F
+    moviw -1[FSR1]
+    addcf rseed+1,F
+    popw
+    addcf rseed+2, F
+; divise rseed par 2    
+    lsrf rseed+2,F
+    rrf rseed+1,F
+    rrf rseed, F
+; jette rseed*2 qui est sur la pile    
+    drop
+    drop
+    return
+    radix hex
     
 ;auto test à l'allumage
 ; allume tous les segments l'un après l'autre
@@ -755,13 +856,13 @@ self_test:
     movlw .10
     pushw
 disp_test:
-    moviw 0[FSR1]
+    movfw TOS
     call light_segment
     movlw .25
     pushw
     over
     call tone
-    decfsz INDF1,F
+    decfsz TOS,F
     bra disp_test
     popw
     display_disable
@@ -778,35 +879,95 @@ servo_test:
     call servo_pos
     return
 
-; easter egg    
-un_oeuf:
-    movlw high HYMNE
+; easter egg 
+; fonction cachée obtenue lorsque le bouton
+; temps est enfoncé lorsque l'utilisateur presse 
+; le bouton start
+boite_a_musique:
+    movlw .7
+    andwf musique,W
+    case 0, musique_0
+    case 1, musique_1
+    case 2, musique_2
+    case 3, musique_3
+    case 4, musique_4
+    case 5, musique_5
+    case 6, musique_6
+; rencontre du 3ième type    
+    movlw high ce3k
     movwf FSR0H
-    movlw low HYMNE
+    movlw low ce3k
     movwf FSR0L
+    bra joue
+musique_6:
+    movlw high greensleeves
+    movwf FSR0H
+    movlw low greensleeves
+    movwf FSR0L
+    bra joue
+musique_5:
+    movlw high gstq
+    movwf FSR0H
+    movlw low gstq
+    movwf FSR0L
+    bra joue
+musique_4:
+    movlw high bon_tabac
+    movwf FSR0H
+    movlw low bon_tabac
+    movwf FSR0L
+    bra joue
+musique_3:
+    movlw high frere_jacques
+    movwf FSR0H
+    movlw low frere_jacques
+    movwf FSR0L
+    bra joue
+musique_2:
+    movlw high claire_fontaine
+    movwf FSR0H
+    movlw low claire_fontaine
+    movwf FSR0L
+    bra joue
+musique_1:
+    movlw high melodia
+    movwf FSR0H
+    movlw low melodia
+    movwf FSR0L
+    bra joue
+musique_0:
+    movlw high hymne_joie
+    movwf FSR0H
+    movlw low hymne_joie
+    movwf FSR0L
+joue:    
     moviw FSR0++
     pushw
-oeuf_loop:
-    moviw FSR0++
+notes_loop:
+    moviw FSR0++ 
     pushw
     moviw FSR0++
     pushw
-    movfw FSR0L
-    movwf temp
+    movfw FSR0L ; sauvegarde FSR0
+    movwf ACAL
+    movfw FSR0H
+    movwf ACAH
     call tone
-    movfw temp
+    movfw ACAL ; restaure FSR0
     movwf FSR0L
-    movlw .25
+    movfw ACAH
+    movwf FSR0H
+    movlw .10
     call pause_msec
-    decfsz INDF1
-    bra oeuf_loop
+    decfsz TOS
+    bra notes_loop
     drop
+    incf musique
     return
-    
+   
 ;;;;;;;;;;;;;;;;
 ;  tables
-;;;;;;;;;;;;;;;;  
-    org  0x700   
+;;;;;;;;;;;;;;;;     
 ; connection des LED
 ; ordre inversé dans le montage final    
 LED_CONN: ; PORT data, TRIS data
@@ -854,9 +1015,14 @@ SCALE:
     dt .66  ;22: 1865 LA#
     dt .63  ;23: 1967 SI
     dt .59  ;24: 2093 DO
+    dt 0    ;25  silence
+
+duree: ; durée des notes
+    ; diviseur PS, temps
+    
     
 ;5 première notes de rencontre du 3ième type
-CE3K:
+ce3k:
     dt .6 ; nombre de notes
     ; durée, note
     dt .100,.14
@@ -868,16 +1034,18 @@ CE3K:
 
 ; 3 première note de la sonate au clair de lune
 ; de Beethoven
-SOLDOMI:
+soldomi:
     dt .3 
     dt .100,.7   ;sol
     dt .100,.12  ;do
     dt .100,.16  ;mi
 
+; partitions trouvées sur
+; http://www.apprendrelaflute.com    
 ; hymne à la joie de Beethoven    
-HYMNE:
+hymne_joie:
     dt .62 ;nombre de notes
-; 1ière mesure
+; 1ière portée
     dt .100,.9   ; la
     dt .100,.9   ; la 
     dt .100,.10  ; si bémol
@@ -893,7 +1061,7 @@ HYMNE:
     dt .150,.7   ; sol
     dt .50,.5   ; fa
     dt .200,.5   ; fa
-;2ième mesure
+;2ième portée
     dt .100,.9   ; la
     dt .100,.9   ; la 
     dt .100,.10  ; si bémol
@@ -909,7 +1077,7 @@ HYMNE:
     dt .150,.7   ; sol
     dt .50,.5   ; fa
     dt .200,.5   ; fa
-;3ième mesure    
+;3ième portée   
     dt .100,.7   ; sol
     dt .100,.7   ; sol
     dt .100,.9   ; la 
@@ -927,7 +1095,7 @@ HYMNE:
     dt .100,.5   ; fa
     dt .100,.7   ; sol
     dt .200,.0   ; do
-;4ième mesure
+;4ième portée
     dt .100,.9   ; la
     dt .100,.9   ; la 
     dt .100,.10  ; si bémol
@@ -943,7 +1111,375 @@ HYMNE:
     dt .150,.7   ; sol
     dt .50,.5   ; fa
     dt .200,.5   ; fa
-   
+ 
+; mélodia (thème du film les jeux interdis)
+melodia:
+    dt .43
+;1ière portée
+    dt .100, .9 ; la
+    dt .100, .9 ; la
+    dt .100, .9 ; la
+    dt .100, .9 ; la
+    dt .100, .7 ; sol
+    dt .100, .5 ; fa
+    dt .100, .5 ; fa
+    dt .100, .4 ; mi
+    dt .100, .2 ; ré
+    dt .100, .2 ; ré
+    dt .100, .5 ; fa
+    dt .100, .9 ; la
+;2ième portée
+    dt .100, .14 ; ré
+    dt .100, .14 ; ré
+    dt .100, .14 ; ré
+    dt .100, .14 ; ré
+    dt .100, .12 ; do
+    dt .100, .10 ; si bémol
+    dt .100, .10 ; si bémol
+    dt .100, .9 ; la
+    dt .100, .7 ; sol
+    dt .100, .7 ; sol
+    dt .100, .9 ; la
+    dt .100, .10 ; si bémol
+;3ième portée
+    dt .100, .9 ; la
+    dt .100, .10 ; si bémol
+    dt .100, .9 ; la
+    dt .100, .13 ; do#
+    dt .100, .10 ; si bémol
+    dt .100, .9 ; la
+    dt .100, .9 ; la
+    dt .100, .7 ; sol
+    dt .100, .5 ; fa
+;4ième portée
+    dt .100, .5 ; fa
+    dt .100, .4 ; mi
+    dt .100, .2 ; ré
+    dt .100, .4 ; mi
+    dt .100, .4 ; mi
+    dt .100, .4 ; mi
+    dt .100, .4 ; mi
+    dt .100, .5 ; fa
+    dt .100, .4 ; mi
+    dt .255, .2 ; ré
+
+; à la claire fontaine    
+claire_fontaine:
+;1ière portée
+    dt .41
+    dt .200, .7  ; sol
+    dt .100, .7  ; sol
+    dt .100, .11 ; si
+    dt .100, .11 ; si
+    dt .100, .9  ; la
+    dt .100, .11 ; si
+    dt .100, .7  ; sol
+    dt .200, .7  ; sol
+    dt .100, .7  ; sol
+    dt .100, .11 ; si
+    dt .100, .11 ; si
+    dt .100, .9  ; la
+    dt .200, .11 ; si
+;2ième portée
+    dt .200, .11 ; si
+    dt .100, .11 ; si
+    dt .100, .9  ; la
+    dt .100, .7  ; sol
+    dt .100, .11 ; si
+    dt .100, .14 ; ré
+    dt .100, .11 ; si
+    dt .200, .14 ; ré
+    dt .100, .14 ; ré
+    dt .100, .11 ; si
+    dt .100, .7  ; sol
+    dt .100, .11 ; si
+    dt .200, .9  ; la
+;3ième portée
+    dt .200, .7  ; sol
+    dt .100, .7  ; sol
+    dt .100, .11 ; si
+    dt .100, .11 ; si
+    dt .50, .9   ; la
+    dt .50, .7   ; sol
+    dt .100, .11 ; si
+    dt .100, .7  ; sol
+    dt .200, .11 ; si
+    dt .100, .11 ; si
+    dt .50, .9  ; la
+    dt .50, .7  ; sol
+    dt .100, .11 ; si
+    dt .100, .9  ; la
+    dt .200, .7  ; sol
+    
+;frère Jacques
+frere_jacques:    
+    dt .32
+;1ière portée
+    dt .100, .5 ; fa
+    dt .100, .7  ; sol
+    dt .100, .9   ; la
+    dt .100, .5 ; fa
+    
+    dt .100, .5 ; fa
+    dt .100, .7  ; sol
+    dt .100, .9   ; la
+    dt .100, .5 ; fa
+ 
+    dt .100, .9   ; la
+    dt .100, .10 ; si bémol
+    dt .200, .12 ; do
+    
+    dt .100, .9   ; la
+    dt .100, .10 ; si bémol
+    dt .200, .12 ; do
+;2ième portée    
+    dt .75,  .12 ; do
+    dt .25,  .14 ; ré
+    dt .50,  .12 ; do
+    dt .50,  .10 ; si bémol
+    dt .100, .9  ; la
+    dt .100, .5  ; fa
+
+    dt .75,  .12 ; do
+    dt .25,  .14 ; ré
+    dt .50,  .12 ; do
+    dt .50,  .10 ; si bémol
+    dt .100, .9  ; la
+    dt .100, .5  ; fa
+
+    dt .100, .5  ; fa
+    dt .100, .12 ; do
+    dt .200, .5  ; fa
+
+    dt .100, .5   ; fa
+    dt .100,  .12 ; do
+    dt .200, .5   ; fa
+
+;J'ai du bon tabac dans ma tabatière
+bon_tabac:
+    dt .30
+;1ière portée
+    dt .100, .7  ; sol
+    dt .100, .9   ; la
+    dt .100, .11 ; si
+    dt .100, .7  ; sol
+    
+    dt .200, .9   ; la
+    dt .100, .9   ; la
+    dt .100, .11 ; si
+    
+    dt .200,  .12 ; do
+    dt .200,  .12 ; do
+    
+    dt .200, .11 ; si
+    dt .200, .11 ; si
+;2ième portée
+    dt .100, .7  ; sol
+    dt .100, .9   ; la
+    dt .100, .11 ; si
+    dt .100, .7  ; sol
+    
+    dt .200, .9   ; la
+    dt .100, .9   ; la
+    dt .100, .11 ; si
+    
+    dt .200,  .12 ; do
+    dt .200,  .14 ; ré
+    
+    dt .255,  .7  ; sol
+;3ième portée
+    dt .200,  .14 ; ré
+    dt .100,  .14 ; ré
+    dt .100,  .12 ; do
+       
+    dt .200, .11 ; si
+    dt .100, .9   ; la
+    dt .100, .11 ; si
+ 
+    dt .200,  .12 ; do
+    dt .200,  .14 ; ré
+    
+    dt .255,  .9  ; la    
+
+; god save de queen    
+gstq:    
+    dt .41
+;1ère portée    
+    dt .100, .12 ; do
+    dt .100, .12 ; do
+    dt .100, .14 ; ré
+    
+    dt .150, .11 ; si
+    dt .50,  .12 ; do
+    dt .100, .14 ; ré
+    
+    dt .100, .16 ; mi
+    dt .100, .16 ; mi
+    dt .100, .17 ; fa
+    
+    dt .150, .16 ; mi
+    dt .50,  .14 ; ré
+    dt .100, .12 ; do
+
+;2ième portée
+    dt .100, .14 ; ré
+    dt .100, .12 ; do
+    dt .100, .11 ; si
+    
+    dt .255, .12 ; do
+    
+    dt .100, .19 ; sol
+    dt .100, .19 ; sol
+    dt .100, .19 ; sol
+
+    dt .150, .19 ; sol
+    dt .50,  .17 ; fa
+    dt .100, .16 ; mi
+    
+;3ième portée
+    dt .100, .17 ; fa
+    dt .100, .17 ; fa
+    dt .100, .17 ; fa
+
+    dt .150, .17 ; fa
+    dt .50,  .16 ; mi
+    dt .100, .14 ; ré
+    
+    dt .100, .16 ; mi
+    dt .50,  .17 ; fa
+    dt .50,  .16 ; mi
+    dt .50,  .14 ; ré
+    dt .50,  .12 ; do
+    
+    dt .150, .16 ; mi
+    dt .50,  .17 ; fa
+    dt .100, .19 ; sol
+    
+;4ième portée
+    dt .50,  .21 ; la
+    dt .50,  .17 ; fa
+    dt .100, .16 ; mi
+    dt .100, .14 ; ré
+    
+    dt .255, .12 ; do
+
+;greensleeves
+greensleeves:
+    dt .72
+;1ière portée
+;    dt .100, .25  ; silence
+;    dt .100, .25  ; silence
+    dt .100, .14  ; ré
+    
+    dt .200, .17  ; fa
+    dt .100, .19  ; sol
+    
+    dt .150, .21  ; la
+    dt .50,  .20  ; si bémol
+    dt .100, .21  ; la
+    
+    dt .200, .19  ; sol
+    dt .100, .16  ; mi
+    
+    dt .150, .12  ; do
+    dt .50,  .14  ; ré
+    dt .100, .16  ; mi
+    
+    dt .200, .17  ; fa
+    dt .100, .14  ; ré
+;2ième portée
+    dt .150, .14  ; ré
+    dt .50,  .13  ; do#
+    dt .100, .14  ; ré
+    
+    dt .200, .16  ; mi
+    dt .100, .13  ; do#
+    
+    dt .200, .9   ; la
+    dt .100, .14  ; ré
+    
+    dt .200, .17  ; fa
+    dt .100, .19  ; sol
+    
+    dt .150, .21  ; la
+    dt .50,  .20  ; si bémol
+    dt .100, .21  ; la
+    
+    dt .200, .19  ; sol
+    dt .100, .16  ; mi
+;3ième portée
+    dt .150, .12  ; do
+    dt .50,  .14  ; ré
+    dt .100, .16  ; mi
+    
+    dt .150, .17  ; fa
+    dt .50,  .16  ; mi
+    dt .100, .14  ; ré
+    
+    dt .150, .13  ; do#
+    dt .50,  .11  ; si
+    dt .100, .13  ; do#
+    
+    dt .200, .14  ; ré
+    dt .100, .14  ; ré
+    
+    dt .255, .24  ; do  devrait-être .300, .24
+;    dt .45,  .25  ; problème
+    
+    dt .150, .24  ; do
+    dt .50,  .23  ; si
+    dt .100, .21  ; la
+    
+    dt .200, .19  ; sol
+    dt .100, .16  ; mi
+;4ième portée
+    dt .150, .12  ; do
+    dt .50,  .14  ; ré
+    dt .100, .16  ; mi
+    
+    dt .200, .17  ; fa
+    dt .100, .14  ; ré
+    
+    dt .150, .14  ; ré
+    dt .50,  .13  ; do#
+    dt .100, .14  ; ré
+    
+    dt .200, .16  ; mi
+    dt .100, .13  ; do#
+    
+    dt .255, .9   ; la
+ ;   dt .45,  .25  ; silence
+    
+    dt .255, .24  ; do
+;    dt .45,  .25  ; silence
+    
+    dt .150, .24  ; do
+    dt .50,  .23  ; si
+    dt .100, .21  ; la
+    
+    dt .200, .19  ; sol
+    dt .100, .16  ; mi
+    
+    dt .150, .12  ; do
+    dt .50,  .14  ; ré
+    dt .100, .16  ; mi
+    
+    dt .150, .17  ; fa
+    dt .50,  .16  ; mi
+    dt .100, .14  ; ré
+    
+    dt .150, .13  ; do#
+    dt .50,  .11  ; si
+    dt .100, .13  ; do#
+    
+    dt .255, .14  ; ré
+;    dt .45,  .25  ; silence
+    
+    dt .255, .14  ; ré
+    
+    
+    
+    
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;    
     end
     
