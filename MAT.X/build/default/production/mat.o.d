@@ -1,3 +1,3 @@
 build/default/production/mat.o:  \
-	/home/jacques/github/machineathe/MAT.X/mat.asm  \
+	C:/Users/Jacques/Documents/GitHub/machineathe/MAT.X/mat.asm  \
 

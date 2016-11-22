@@ -1,4 +1,4 @@
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE  1
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE  1
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -44,7 +44,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00001         LIST
                       00002 
                       00003 ;==========================================================================
-                      00004 ; Build date : May 15 2016
+                      00004 ; Build date : Sep 13 2016
                       00005 ;  MPASM PIC16F1703 processor include
                       00006 ; 
                       00007 ;  (c) Copyright 1999-2016 Microchip Technology, All rights reserved
@@ -57,7 +57,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00041 ;;;;;;;;;;;;;;
 8007   39E4           00042     __config  _CONFIG1, _FOSC_INTOSC & _WDTE_OFF & _PWRTE_OFF & _MCLRE_ON & _CP_OFF & _BOREN_OFF & _CLKO
                             UTEN_OFF
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE  2
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE  2
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -116,7 +116,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00092 #define C4      RC5
                       00093 #define C5      RC4
                       00094 #define C6      RC3
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE  3
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE  3
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -147,11 +147,11 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
   8300                00117     constant TMR1_DLY=.65536-.32000  ; compte pour TMR1H:TMR1L
   009B                00118     constant SERVO_PERIOD=.155       ; compte pour PR2
   002F                00119     constant SERVO_NEUTRAL_PULSE=.47 ; compte pour CCP2RL:CCP2CON:DC2B
-  0034                00120     constant SERVO_POS_BAS=.52       ; " 
+  002F                00120     constant SERVO_POS_BAS=.47       ; " 
   003C                00121     constant SERVO_POS_HAUT=.60      ; "
   0003                00122     constant SERVO_DLY=.3  ; contrôle vitesse de rotation
                       00123     
-  0008                00124     constant NOMBRE_MELODIES=.8 ; nombre de mélodies pour la boite à musique
+  0009                00124     constant NOMBRE_MELODIES=.9 ; nombre de mélodies pour la boite à musique
                       00125     
                       00126 ;;;;;;;;;;;;;;    
                       00127 ; macros    
@@ -175,7 +175,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00145  
                       00146 dup macro ; copie TOS   ( n -- n n )
                       00147     moviw 0[FSR1]
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE  4
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE  4
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -234,7 +234,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00198 ;;;;;;;;;;;;;;
                       00199 ; variables
                       00200 ;;;;;;;;;;;;;;
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE  5
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE  5
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -293,7 +293,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
 0013   0B??           00251     decfsz secondes,F
 0014   3???           00252     bra isr_exit
                       00253 ; minuterie expiré désactive interuption
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE  6
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE  6
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -352,7 +352,7 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
                       00299 ; activation low power sleep mode
 0037   0023           00300     banksel VREGCON
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE  7
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE  7
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -411,7 +411,7 @@ Message[305]: Using default destination of 1 (file).
 0055   0027           00342     banksel START_IOCF
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 0056   1293           00343     bcf START_IOCF, START_PIN ; remise à zéro indicateur interruption
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE  8
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE  8
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -447,7 +447,7 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
                       00367 ; ajustement du temps
 006A   2???           00368     call timeset
                       00369 ; descente du sachet dans la tasse
-006B   3034           00370     movlw SERVO_POS_BAS 
+006B   302F           00370     movlw SERVO_POS_BAS 
 006C   2???           00371     call servo_pos
                       00372 ;   attend expiration de la minuterie
                       00373 ;   avec mise à jour de LED_BAR    
@@ -470,7 +470,7 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 0075                  00390 timeset_wait_btn:   
                       00391     display_enable
 0075   0024               M     banksel DISP_WPU
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE  9
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE  9
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -529,7 +529,7 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 009B   001C               M     movwi ++FSR1
 009C   2???           00431     call tone
 009D   0008           00432     return
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 10
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 10
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -588,7 +588,7 @@ Message[305]: Using default destination of 1 (file).
 00C3   01??           00478     clrf secondes
 00C4                  00479 timeout:    
                       00480     display_disable
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 11
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 11
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -647,7 +647,7 @@ Message[305]: Using default destination of 1 (file).
                       00519 
                       00520 ; fait entendre une tonalité
                       00521 ; entrée:  pile ( d n -- )
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 12
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 12
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -706,7 +706,7 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 0105   0791           00561     addwf TONE_CCPRL
 Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
 0106   0811           00562     movfw TONE_CCPRL
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 13
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 13
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -765,7 +765,7 @@ Message[305]: Using default destination of 1 (file).
 0125   0784           00605     addwf FSR0L ; ajuste le pointeur de table
 0126   3000           00606     movlw 0
 Message[305]: Using default destination of 1 (file).
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 14
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 14
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -800,9 +800,9 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
                       00630     pushw
 0131   001C               M     movwi ++FSR1
                       00631 ; contrôle des limites    
-0132   3034           00632     movlw SERVO_POS_BAS
+0132   302F           00632     movlw SERVO_POS_BAS
 0133   0201           00633     subwf TOS,W
-0134   3034           00634     movlw SERVO_POS_BAS
+0134   302F           00634     movlw SERVO_POS_BAS
 0135   1C03           00635     skpc
 0136   0081           00636     movwf TOS
 0137   303C           00637     movlw SERVO_POS_HAUT
@@ -824,7 +824,7 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 0143   009C           00652     movwf T2CON
                       00653 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;    
                       00654 ; pour contrôler la vitesse de rotation
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 15
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 15
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -883,7 +883,7 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 0166   019A           00700     clrf SERVO_CCPCON
 0167   0020           00701     banksel T2CON
 0168   111C           00702     bcf T2CON, TMR2ON
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 16
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 16
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -942,7 +942,7 @@ Message[305]: Using default destination of 1 (file).
 0188   08??           00749     movfw DIVISEUR
 0189   02??           00750     subwf DIVIDENDE,W
 018A   1C03           00751     skpc
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 17
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 17
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -1001,7 +1001,7 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 01AD   0008           00800     return
                       00801 
                       00802 ;pause en multiple de 4 msec
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 18
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 18
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -1060,7 +1060,7 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
 01CE   0008           00847     return
                       00848     radix hex
                       00849     
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 19
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 19
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -1110,7 +1110,7 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
 01E5   001C               M     movwi ++FSR1
 01E6   2???           00874     call tone
 01E7                  00875 servo_test:
-01E7   3034           00876     movlw SERVO_POS_BAS
+01E7   302F           00876     movlw SERVO_POS_BAS
 01E8   2???           00877     call servo_pos
 01E9   303C           00878     movlw SERVO_POS_HAUT
 01EA   2???           00879     call servo_pos
@@ -1119,7 +1119,7 @@ Message[302]: Register in operand not in bank 0.  Ensure that bank bits are corr
                       00882 ; easter egg 
                       00883 ; fonction cachée obtenue lorsque le bouton
                       00884 ; temps est enfoncé lorsque l'utilisateur presse 
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 20
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 20
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -1127,705 +1127,762 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
 
                       00885 ; le bouton start
 01EC                  00886 boite_a_musique:
-01EC   3007           00887     movlw .7
-01ED   05??           00888     andwf musique,W
-                      00889     case 0, musique_0
-01EE   3A00               M     xorlw 0
-01EF   1903               M     skpnz
-01F0   3???               M     bra musique_0
+01EC   3009           00887     movlw NOMBRE_MELODIES
+01ED   02??           00888     subwf musique,W
+01EE   1803           00889     skpnc
+01EF   01??           00890     clrf musique
+01F0   08??           00891     movfw musique
+                      00892     case 0, musique_0
 01F1   3A00               M     xorlw 0
-                      00890     case 1, musique_1
-01F2   3A01               M     xorlw 1
-01F3   1903               M     skpnz
-01F4   3???               M     bra musique_1
+01F2   1903               M     skpnz
+01F3   3???               M     bra musique_0
+01F4   3A00               M     xorlw 0
+                      00893     case 1, musique_1
 01F5   3A01               M     xorlw 1
-                      00891     case 2, musique_2
-01F6   3A02               M     xorlw 2
-01F7   1903               M     skpnz
-01F8   3???               M     bra musique_2
+01F6   1903               M     skpnz
+01F7   3???               M     bra musique_1
+01F8   3A01               M     xorlw 1
+                      00894     case 2, musique_2
 01F9   3A02               M     xorlw 2
-                      00892     case 3, musique_3
-01FA   3A03               M     xorlw 3
-01FB   1903               M     skpnz
-01FC   3???               M     bra musique_3
+01FA   1903               M     skpnz
+01FB   3???               M     bra musique_2
+01FC   3A02               M     xorlw 2
+                      00895     case 3, musique_3
 01FD   3A03               M     xorlw 3
-                      00893     case 4, musique_4
-01FE   3A04               M     xorlw 4
-01FF   1903               M     skpnz
-0200   3???               M     bra musique_4
+01FE   1903               M     skpnz
+01FF   3???               M     bra musique_3
+0200   3A03               M     xorlw 3
+                      00896     case 4, musique_4
 0201   3A04               M     xorlw 4
-                      00894     case 5, musique_5
-0202   3A05               M     xorlw 5
-0203   1903               M     skpnz
-0204   3???               M     bra musique_5
+0202   1903               M     skpnz
+0203   3???               M     bra musique_4
+0204   3A04               M     xorlw 4
+                      00897     case 5, musique_5
 0205   3A05               M     xorlw 5
-                      00895     case 6, musique_6
-0206   3A06               M     xorlw 6
-0207   1903               M     skpnz
-0208   3???               M     bra musique_6
+0206   1903               M     skpnz
+0207   3???               M     bra musique_5
+0208   3A05               M     xorlw 5
+                      00898     case 6, musique_6
 0209   3A06               M     xorlw 6
-                      00896 ; rencontre du 3ième type    
-020A   30??           00897     movlw high ce3k
-020B   0085           00898     movwf FSR0H
-020C   30??           00899     movlw low ce3k
-020D   0084           00900     movwf FSR0L
-020E   3???           00901     bra joue
-020F                  00902 musique_6:
-020F   30??           00903     movlw high greensleeves
-0210   0085           00904     movwf FSR0H
-0211   30??           00905     movlw low greensleeves
-0212   0084           00906     movwf FSR0L
-0213   3???           00907     bra joue
-0214                  00908 musique_5:
-0214   30??           00909     movlw high gstq
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 21
+020A   1903               M     skpnz
+020B   3???               M     bra musique_6
+020C   3A06               M     xorlw 6
+                      00899     case 7, musique_7
+020D   3A07               M     xorlw 7
+020E   1903               M     skpnz
+020F   3???               M     bra musique_7
+0210   3A07               M     xorlw 7
+0211                  00900 musique_8:
+0211   30??           00901     movlw high KORO
+0212   0085           00902     movwf FSR0H
+0213   30??           00903     movlw low KORO
+0214   0084           00904     movwf FSR0L
+0215   3???           00905     bra joue
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 21
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-0215   0085           00910     movwf FSR0H
-0216   30??           00911     movlw low gstq
-0217   0084           00912     movwf FSR0L
-0218   3???           00913     bra joue
-0219                  00914 musique_4:
-0219   30??           00915     movlw high bon_tabac
-021A   0085           00916     movwf FSR0H
-021B   30??           00917     movlw low bon_tabac
-021C   0084           00918     movwf FSR0L
-021D   3???           00919     bra joue
-021E                  00920 musique_3:
-021E   30??           00921     movlw high frere_jacques
-021F   0085           00922     movwf FSR0H
-0220   30??           00923     movlw low frere_jacques
-0221   0084           00924     movwf FSR0L
-0222   3???           00925     bra joue
-0223                  00926 musique_2:
-0223   30??           00927     movlw high claire_fontaine
-0224   0085           00928     movwf FSR0H
-0225   30??           00929     movlw low claire_fontaine
-0226   0084           00930     movwf FSR0L
-0227   3???           00931     bra joue
-0228                  00932 musique_1:
-0228   30??           00933     movlw high melodia
-0229   0085           00934     movwf FSR0H
-022A   30??           00935     movlw low melodia
-022B   0084           00936     movwf FSR0L
-022C   3???           00937     bra joue
-022D                  00938 musique_0:
-022D   30??           00939     movlw high hymne_joie
-022E   0085           00940     movwf FSR0H
-022F   30??           00941     movlw low hymne_joie
-0230   0084           00942     movwf FSR0L
-0231                  00943 joue:    
-0231   0012           00944     moviw FSR0++
-                      00945     pushw
-0232   001C               M     movwi ++FSR1
-0233                  00946 notes_loop:
-0233   0012           00947     moviw FSR0++ 
-                      00948     pushw
-0234   001C               M     movwi ++FSR1
-0235   0012           00949     moviw FSR0++
-                      00950     pushw
-0236   001C               M     movwi ++FSR1
-0237   0804           00951     movfw FSR0L ; sauvegarde FSR0
-0238   00??           00952     movwf ACAL
-0239   0805           00953     movfw FSR0H
-023A   00??           00954     movwf ACAH
-023B   2???           00955     call tone
-023C   08??           00956     movfw ACAL ; restaure FSR0
-023D   0084           00957     movwf FSR0L
-023E   08??           00958     movfw ACAH
-023F   0085           00959     movwf FSR0H
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 22
+0216                  00906 musique_7:    
+                      00907 ; rencontre du 3ième type    
+0216   30??           00908     movlw high ce3k
+0217   0085           00909     movwf FSR0H
+0218   30??           00910     movlw low ce3k
+0219   0084           00911     movwf FSR0L
+021A   3???           00912     bra joue
+021B                  00913 musique_6:
+021B   30??           00914     movlw high greensleeves
+021C   0085           00915     movwf FSR0H
+021D   30??           00916     movlw low greensleeves
+021E   0084           00917     movwf FSR0L
+021F   3???           00918     bra joue
+0220                  00919 musique_5:
+0220   30??           00920     movlw high gstq
+0221   0085           00921     movwf FSR0H
+0222   30??           00922     movlw low gstq
+0223   0084           00923     movwf FSR0L
+0224   3???           00924     bra joue
+0225                  00925 musique_4:
+0225   30??           00926     movlw high bon_tabac
+0226   0085           00927     movwf FSR0H
+0227   30??           00928     movlw low bon_tabac
+0228   0084           00929     movwf FSR0L
+0229   3???           00930     bra joue
+022A                  00931 musique_3:
+022A   30??           00932     movlw high frere_jacques
+022B   0085           00933     movwf FSR0H
+022C   30??           00934     movlw low frere_jacques
+022D   0084           00935     movwf FSR0L
+022E   3???           00936     bra joue
+022F                  00937 musique_2:
+022F   30??           00938     movlw high claire_fontaine
+0230   0085           00939     movwf FSR0H
+0231   30??           00940     movlw low claire_fontaine
+0232   0084           00941     movwf FSR0L
+0233   3???           00942     bra joue
+0234                  00943 musique_1:
+0234   30??           00944     movlw high melodia
+0235   0085           00945     movwf FSR0H
+0236   30??           00946     movlw low melodia
+0237   0084           00947     movwf FSR0L
+0238   3???           00948     bra joue
+0239                  00949 musique_0:
+0239   30??           00950     movlw high hymne_joie
+023A   0085           00951     movwf FSR0H
+023B   30??           00952     movlw low hymne_joie
+023C   0084           00953     movwf FSR0L
+023D                  00954 joue:    
+023D   0012           00955     moviw FSR0++
+                      00956     pushw
+023E   001C               M     movwi ++FSR1
+023F                  00957 notes_loop:
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 22
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-0240   300A           00960     movlw .10
-0241   2???           00961     call pause_msec
+023F   0012           00958     moviw FSR0++ 
+                      00959     pushw
+0240   001C               M     movwi ++FSR1
+0241   0012           00960     moviw FSR0++
+                      00961     pushw
+0242   001C               M     movwi ++FSR1
+0243   0804           00962     movfw FSR0L ; sauvegarde FSR0
+0244   00??           00963     movwf ACAL
+0245   0805           00964     movfw FSR0H
+0246   00??           00965     movwf ACAH
+0247   2???           00966     call tone
+0248   08??           00967     movfw ACAL ; restaure FSR0
+0249   0084           00968     movwf FSR0L
+024A   08??           00969     movfw ACAH
+024B   0085           00970     movwf FSR0H
+024C   300A           00971     movlw .10
+024D   2???           00972     call pause_msec
 Message[305]: Using default destination of 1 (file).
-0242   0B81           00962     decfsz TOS
-0243   3???           00963     bra notes_loop
-                      00964     drop
-0244   317F               M     addfsr FSR1,0x3f
+024E   0B81           00973     decfsz TOS
+024F   3???           00974     bra notes_loop
+                      00975     drop
+0250   317F               M     addfsr FSR1,0x3f
 Message[305]: Using default destination of 1 (file).
-0245   0A??           00965     incf musique
-0246   0008           00966     return
-                      00967    
-                      00968 ;;;;;;;;;;;;;;;;
-                      00969 ;  tables
-                      00970 ;;;;;;;;;;;;;;;;     
-                      00971 ; connection des LED
-                      00972 ; ordre inversé dans le montage final    
-0247                  00973 LED_CONN: ; PORT data, TRIS data
-0247   3400 34FF      00974     dt 0, 0xFF ; tous les segments éteints
-0249   3408 34F3      00975     dt 1<<A10, ~(1<<C10 | 1<<A10)
-024B   3404 34F3      00976     dt 1<<A9, ~(1<<C9 | 1<<A9)
-024D   3404 34EB      00977     dt 1<<A8, ~(1<<C8 | 1<<A8)
-024F   3404 34DB      00978     dt 1<<A7, ~(1<<C7 | 1<<A7)
-0251   3402 34F5      00979     dt 1<<A6, ~(1<<C6 | 1<<A6)
-0253   3402 34ED      00980     dt 1<<A5, ~(1<<C5 | 1<<A5)
-0255   3402 34DD      00981     dt 1<<A4, ~(1<<C4 | 1<<A4)
-0257   3401 34F6      00982     dt 1<<A3, ~(1<<C3 | 1<<A3)
-0259   3401 34EE      00983     dt 1<<A2, ~(1<<C2 | 1<<A2)
-025B   3401 34DE      00984     dt 1<<A1, ~(1<<C1 | 1<<A1)
-025D   3400 34FF      00985     dt 0, 0xFF
-025F   3400 34FF      00986     dt 0, 0xFF
-0261   3400 34FF      00987     dt 0, 0xFF
-0263   3400 34FF      00988     dt 0, 0xFF
-0265   3400 34FF      00989     dt 0, 0xFF
-                      00990 
-                      00991 ;valeur de PR2 pour généré tonalités gamme tempéré
-0267                  00992 SCALE:
-0267   34EE           00993     dt .238 ;0: 523 DO
-0268   34E1           00994     dt .225 ;1: 554 DO#
-0269   34D4           00995     dt .212 ;2: 587 RÉ
-026A   34C8           00996     dt .200 ;3: 622 RÉ#
-026B   34BD           00997     dt .189 ;4: 659 MI
-026C   34B2           00998     dt .178 ;5: 698 FA
-026D   34A8           00999     dt .168 ;6: 740 FA#
-026E   349E           01000     dt .158 ;7: 784 SOL
-026F   3495           01001     dt .149 ;8: 831 SOL#
-0270   348D           01002     dt .141 ;9: 880 LA
-0271   3485           01003     dt .133 ;10: 932 LA#
-0272   347E           01004     dt .126 ;11: 988 SI
-0273   3476           01005     dt .118 ;12: 1047 DO
-0274   3470           01006     dt .112 ;13: 1109 DO#
-0275   3469           01007     dt .105 ;14: 1175 RÉ
-0276   3463           01008     dt .99  ;15: 1245 RÉ#
-0277   345E           01009     dt .94  ;16: 1319 MI
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 23
+0251   0A??           00976     incf musique
+0252   0008           00977     return
+                      00978    
+                      00979 ;;;;;;;;;;;;;;;;
+                      00980 ;  tables
+                      00981 ;;;;;;;;;;;;;;;;     
+                      00982 ; connection des LED
+                      00983 ; ordre inversé dans le montage final    
+0253                  00984 LED_CONN: ; PORT data, TRIS data
+0253   3400 34FF      00985     dt 0, 0xFF ; tous les segments éteints
+0255   3408 34F3      00986     dt 1<<A10, ~(1<<C10 | 1<<A10)
+0257   3404 34F3      00987     dt 1<<A9, ~(1<<C9 | 1<<A9)
+0259   3404 34EB      00988     dt 1<<A8, ~(1<<C8 | 1<<A8)
+025B   3404 34DB      00989     dt 1<<A7, ~(1<<C7 | 1<<A7)
+025D   3402 34F5      00990     dt 1<<A6, ~(1<<C6 | 1<<A6)
+025F   3402 34ED      00991     dt 1<<A5, ~(1<<C5 | 1<<A5)
+0261   3402 34DD      00992     dt 1<<A4, ~(1<<C4 | 1<<A4)
+0263   3401 34F6      00993     dt 1<<A3, ~(1<<C3 | 1<<A3)
+0265   3401 34EE      00994     dt 1<<A2, ~(1<<C2 | 1<<A2)
+0267   3401 34DE      00995     dt 1<<A1, ~(1<<C1 | 1<<A1)
+0269   3400 34FF      00996     dt 0, 0xFF
+026B   3400 34FF      00997     dt 0, 0xFF
+026D   3400 34FF      00998     dt 0, 0xFF
+026F   3400 34FF      00999     dt 0, 0xFF
+0271   3400 34FF      01000     dt 0, 0xFF
+                      01001 
+                      01002 ;valeur de PR2 pour généré tonalités gamme tempéré
+0273                  01003 SCALE:
+0273   34EE           01004     dt .238 ;0: 523 DO
+0274   34E1           01005     dt .225 ;1: 554 DO#
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 23
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-0278   3458           01010     dt .88  ;17: 1397 FA
-0279   3453           01011     dt .83  ;18: 1480 FA#
-027A   344F           01012     dt .79  ;19: 1568 SOL
-027B   344A           01013     dt .74  ;20: 1661 SOL#
-027C   3446           01014     dt .70  ;21: 1760 LA
-027D   3442           01015     dt .66  ;22: 1865 LA#
-027E   343F           01016     dt .63  ;23: 1967 SI
-027F   343B           01017     dt .59  ;24: 2093 DO
-0280   3400           01018     dt 0    ;25  silence
-                      01019 
-0281                  01020 duree: ; durée des notes
-                      01021     ; diviseur PS, temps
-                      01022     
-                      01023     
-                      01024 ;5 première notes de rencontre du 3ième type
-0281                  01025 ce3k:
-0281   3406           01026     dt .6 ; nombre de notes
-                      01027     ; durée, note
-0282   3464 340E      01028     dt .100,.14
-0284   3464 3410      01029     dt .100,.16
-0286   3464 340C      01030     dt .100,.12
-0288   3464 3400      01031     dt .100,.0
-028A   34C8 3407      01032     dt .200,.7
-028C   34C8 3407      01033     dt .200,.7
-                      01034 
-                      01035 ; 3 première note de la sonate au clair de lune
-                      01036 ; de Beethoven
-028E                  01037 soldomi:
-028E   3403           01038     dt .3 
-028F   3464 3407      01039     dt .100,.7   ;sol
-0291   3464 340C      01040     dt .100,.12  ;do
-0293   3464 3410      01041     dt .100,.16  ;mi
-                      01042 
-                      01043 ; partitions trouvées sur
-                      01044 ; http://www.apprendrelaflute.com    
-                      01045 ; hymne à la joie de Beethoven    
-0295                  01046 hymne_joie:
-0295   343E           01047     dt .62 ;nombre de notes
-                      01048 ; 1ière portée
-0296   3464 3409      01049     dt .100,.9   ; la
-0298   3464 3409      01050     dt .100,.9   ; la 
-029A   3464 340A      01051     dt .100,.10  ; si bémol
-029C   3464 340C      01052     dt .100,.12  ; do
-029E   3464 340C      01053     dt .100,.12  ; do
-02A0   3464 340A      01054     dt .100,.10  ; si bémol
-02A2   3464 3409      01055     dt .100,.9   ; la 
-02A4   3464 3407      01056     dt .100,.7   ; sol
-02A6   3464 3405      01057     dt .100,.5   ; fa
-02A8   3464 3405      01058     dt .100,.5   ; fa
-02AA   3464 3407      01059     dt .100,.7   ; sol
-02AC   3464 3409      01060     dt .100,.9   ; la 
-02AE   3496 3407      01061     dt .150,.7   ; sol
-02B0   3432 3405      01062     dt .50,.5   ; fa
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 24
+0275   34D4           01006     dt .212 ;2: 587 RÉ
+0276   34C8           01007     dt .200 ;3: 622 RÉ#
+0277   34BD           01008     dt .189 ;4: 659 MI
+0278   34B2           01009     dt .178 ;5: 698 FA
+0279   34A8           01010     dt .168 ;6: 740 FA#
+027A   349E           01011     dt .158 ;7: 784 SOL
+027B   3495           01012     dt .149 ;8: 831 SOL#
+027C   348D           01013     dt .141 ;9: 880 LA
+027D   3485           01014     dt .133 ;10: 932 LA#
+027E   347E           01015     dt .126 ;11: 988 SI
+027F   3476           01016     dt .118 ;12: 1047 DO
+0280   3470           01017     dt .112 ;13: 1109 DO#
+0281   3469           01018     dt .105 ;14: 1175 RÉ
+0282   3463           01019     dt .99  ;15: 1245 RÉ#
+0283   345E           01020     dt .94  ;16: 1319 MI
+0284   3458           01021     dt .88  ;17: 1397 FA
+0285   3453           01022     dt .83  ;18: 1480 FA#
+0286   344F           01023     dt .79  ;19: 1568 SOL
+0287   344A           01024     dt .74  ;20: 1661 SOL#
+0288   3446           01025     dt .70  ;21: 1760 LA
+0289   3442           01026     dt .66  ;22: 1865 LA#
+028A   343F           01027     dt .63  ;23: 1967 SI
+028B   343B           01028     dt .59  ;24: 2093 DO
+028C   3400           01029     dt 0    ;25  silence
+                      01030 
+028D                  01031 duree: ; durée des notes
+                      01032     ; diviseur PS, temps
+                      01033     
+                      01034     
+                      01035 ;5 première notes de rencontre du 3ième type
+028D                  01036 ce3k:
+028D   3406           01037     dt .6 ; nombre de notes
+                      01038     ; durée, note
+028E   3464 340E      01039     dt .100,.14
+0290   3464 3410      01040     dt .100,.16
+0292   3464 340C      01041     dt .100,.12
+0294   3464 3400      01042     dt .100,.0
+0296   34C8 3407      01043     dt .200,.7
+0298   34C8 3407      01044     dt .200,.7
+                      01045 
+                      01046 ; 3 première note de la sonate au clair de lune
+                      01047 ; de Beethoven
+029A                  01048 soldomi:
+029A   3403           01049     dt .3 
+029B   3464 3407      01050     dt .100,.7   ;sol
+029D   3464 340C      01051     dt .100,.12  ;do
+029F   3464 3410      01052     dt .100,.16  ;mi
+                      01053 
+                      01054 ; partitions trouvées sur
+                      01055 ; http://www.apprendrelaflute.com    
+                      01056 ; hymne à la joie de Beethoven    
+02A1                  01057 hymne_joie:
+02A1   343E           01058     dt .62 ;nombre de notes
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 24
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-02B2   34C8 3405      01063     dt .200,.5   ; fa
-                      01064 ;2ième portée
-02B4   3464 3409      01065     dt .100,.9   ; la
-02B6   3464 3409      01066     dt .100,.9   ; la 
-02B8   3464 340A      01067     dt .100,.10  ; si bémol
-02BA   3464 340C      01068     dt .100,.12  ; do
-02BC   3464 340C      01069     dt .100,.12  ; do
-02BE   3464 340A      01070     dt .100,.10  ; si bémol
-02C0   3464 3409      01071     dt .100,.9   ; la 
-02C2   3464 3407      01072     dt .100,.7   ; sol
-02C4   3464 3405      01073     dt .100,.5   ; fa
-02C6   3464 3405      01074     dt .100,.5   ; fa
-02C8   3464 3407      01075     dt .100,.7   ; sol
-02CA   3464 3409      01076     dt .100,.9   ; la 
-02CC   3496 3407      01077     dt .150,.7   ; sol
-02CE   3432 3405      01078     dt .50,.5   ; fa
-02D0   34C8 3405      01079     dt .200,.5   ; fa
-                      01080 ;3ième portée   
-02D2   3464 3407      01081     dt .100,.7   ; sol
-02D4   3464 3407      01082     dt .100,.7   ; sol
-02D6   3464 3409      01083     dt .100,.9   ; la 
-02D8   3464 3405      01084     dt .100,.5   ; fa
-02DA   3464 3407      01085     dt .100,.7   ; sol
-02DC   3432 3409      01086     dt .50,.9   ; la 
-02DE   3432 340A      01087     dt .50,.10  ; si bémol
-02E0   3464 3409      01088     dt .100,.9   ; la 
-02E2   3464 3405      01089     dt .100,.5   ; fa
-02E4   3464 3407      01090     dt .100,.7   ; sol
-02E6   3432 3409      01091     dt .50,.9   ; la 
-02E8   3432 340A      01092     dt .50,.10  ; si bémol
-02EA   3464 3409      01093     dt .100,.9   ; la 
-02EC   3464 3407      01094     dt .100,.7   ; sol
-02EE   3464 3405      01095     dt .100,.5   ; fa
-02F0   3464 3407      01096     dt .100,.7   ; sol
-02F2   34C8 3400      01097     dt .200,.0   ; do
-                      01098 ;4ième portée
-02F4   3464 3409      01099     dt .100,.9   ; la
-02F6   3464 3409      01100     dt .100,.9   ; la 
-02F8   3464 340A      01101     dt .100,.10  ; si bémol
-02FA   3464 340C      01102     dt .100,.12  ; do
-02FC   3464 340C      01103     dt .100,.12  ; do
-02FE   3464 340C      01104     dt .100,.12  ; do
-0300   3464 340A      01105     dt .100,.10  ; si bémol
-0302   3464 3409      01106     dt .100,.9   ; la 
-0304   3464 3407      01107     dt .100,.7   ; sol
-0306   3464 3405      01108     dt .100,.5   ; fa
-0308   3464 3405      01109     dt .100,.5   ; fa
-030A   3464 3407      01110     dt .100,.7   ; sol
-030C   3496 3407      01111     dt .150,.7   ; sol
-030E   3432 3405      01112     dt .50,.5   ; fa
-0310   34C8 3405      01113     dt .200,.5   ; fa
-                      01114  
-                      01115 ; mélodia (thème du film les jeux interdis)
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 25
+                      01059 ; 1ière portée
+02A2   3464 3409      01060     dt .100,.9   ; la
+02A4   3464 3409      01061     dt .100,.9   ; la 
+02A6   3464 340A      01062     dt .100,.10  ; si bémol
+02A8   3464 340C      01063     dt .100,.12  ; do
+02AA   3464 340C      01064     dt .100,.12  ; do
+02AC   3464 340A      01065     dt .100,.10  ; si bémol
+02AE   3464 3409      01066     dt .100,.9   ; la 
+02B0   3464 3407      01067     dt .100,.7   ; sol
+02B2   3464 3405      01068     dt .100,.5   ; fa
+02B4   3464 3405      01069     dt .100,.5   ; fa
+02B6   3464 3407      01070     dt .100,.7   ; sol
+02B8   3464 3409      01071     dt .100,.9   ; la 
+02BA   3496 3407      01072     dt .150,.7   ; sol
+02BC   3432 3405      01073     dt .50,.5   ; fa
+02BE   34C8 3405      01074     dt .200,.5   ; fa
+                      01075 ;2ième portée
+02C0   3464 3409      01076     dt .100,.9   ; la
+02C2   3464 3409      01077     dt .100,.9   ; la 
+02C4   3464 340A      01078     dt .100,.10  ; si bémol
+02C6   3464 340C      01079     dt .100,.12  ; do
+02C8   3464 340C      01080     dt .100,.12  ; do
+02CA   3464 340A      01081     dt .100,.10  ; si bémol
+02CC   3464 3409      01082     dt .100,.9   ; la 
+02CE   3464 3407      01083     dt .100,.7   ; sol
+02D0   3464 3405      01084     dt .100,.5   ; fa
+02D2   3464 3405      01085     dt .100,.5   ; fa
+02D4   3464 3407      01086     dt .100,.7   ; sol
+02D6   3464 3409      01087     dt .100,.9   ; la 
+02D8   3496 3407      01088     dt .150,.7   ; sol
+02DA   3432 3405      01089     dt .50,.5   ; fa
+02DC   34C8 3405      01090     dt .200,.5   ; fa
+                      01091 ;3ième portée   
+02DE   3464 3407      01092     dt .100,.7   ; sol
+02E0   3464 3407      01093     dt .100,.7   ; sol
+02E2   3464 3409      01094     dt .100,.9   ; la 
+02E4   3464 3405      01095     dt .100,.5   ; fa
+02E6   3464 3407      01096     dt .100,.7   ; sol
+02E8   3432 3409      01097     dt .50,.9   ; la 
+02EA   3432 340A      01098     dt .50,.10  ; si bémol
+02EC   3464 3409      01099     dt .100,.9   ; la 
+02EE   3464 3405      01100     dt .100,.5   ; fa
+02F0   3464 3407      01101     dt .100,.7   ; sol
+02F2   3432 3409      01102     dt .50,.9   ; la 
+02F4   3432 340A      01103     dt .50,.10  ; si bémol
+02F6   3464 3409      01104     dt .100,.9   ; la 
+02F8   3464 3407      01105     dt .100,.7   ; sol
+02FA   3464 3405      01106     dt .100,.5   ; fa
+02FC   3464 3407      01107     dt .100,.7   ; sol
+02FE   34C8 3400      01108     dt .200,.0   ; do
+                      01109 ;4ième portée
+0300   3464 3409      01110     dt .100,.9   ; la
+0302   3464 3409      01111     dt .100,.9   ; la 
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 25
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-0312                  01116 melodia:
-0312   342B           01117     dt .43
-                      01118 ;1ière portée
-0313   3464 3409      01119     dt .100, .9 ; la
-0315   3464 3409      01120     dt .100, .9 ; la
-0317   3464 3409      01121     dt .100, .9 ; la
-0319   3464 3409      01122     dt .100, .9 ; la
-031B   3464 3407      01123     dt .100, .7 ; sol
-031D   3464 3405      01124     dt .100, .5 ; fa
-031F   3464 3405      01125     dt .100, .5 ; fa
-0321   3464 3404      01126     dt .100, .4 ; mi
-0323   3464 3402      01127     dt .100, .2 ; ré
-0325   3464 3402      01128     dt .100, .2 ; ré
-0327   3464 3405      01129     dt .100, .5 ; fa
-0329   3464 3409      01130     dt .100, .9 ; la
-                      01131 ;2ième portée
-032B   3464 340E      01132     dt .100, .14 ; ré
-032D   3464 340E      01133     dt .100, .14 ; ré
-032F   3464 340E      01134     dt .100, .14 ; ré
-0331   3464 340E      01135     dt .100, .14 ; ré
-0333   3464 340C      01136     dt .100, .12 ; do
-0335   3464 340A      01137     dt .100, .10 ; si bémol
-0337   3464 340A      01138     dt .100, .10 ; si bémol
-0339   3464 3409      01139     dt .100, .9 ; la
-033B   3464 3407      01140     dt .100, .7 ; sol
-033D   3464 3407      01141     dt .100, .7 ; sol
-033F   3464 3409      01142     dt .100, .9 ; la
-0341   3464 340A      01143     dt .100, .10 ; si bémol
-                      01144 ;3ième portée
-0343   3464 3409      01145     dt .100, .9 ; la
-0345   3464 340A      01146     dt .100, .10 ; si bémol
-0347   3464 3409      01147     dt .100, .9 ; la
-0349   3464 340D      01148     dt .100, .13 ; do#
-034B   3464 340A      01149     dt .100, .10 ; si bémol
-034D   3464 3409      01150     dt .100, .9 ; la
-034F   3464 3409      01151     dt .100, .9 ; la
-0351   3464 3407      01152     dt .100, .7 ; sol
-0353   3464 3405      01153     dt .100, .5 ; fa
-                      01154 ;4ième portée
-0355   3464 3405      01155     dt .100, .5 ; fa
-0357   3464 3404      01156     dt .100, .4 ; mi
-0359   3464 3402      01157     dt .100, .2 ; ré
-035B   3464 3404      01158     dt .100, .4 ; mi
-035D   3464 3404      01159     dt .100, .4 ; mi
-035F   3464 3404      01160     dt .100, .4 ; mi
-0361   3464 3404      01161     dt .100, .4 ; mi
-0363   3464 3405      01162     dt .100, .5 ; fa
-0365   3464 3404      01163     dt .100, .4 ; mi
-0367   34FF 3402      01164     dt .255, .2 ; ré
-                      01165 
-                      01166 ; à la claire fontaine    
-0369                  01167 claire_fontaine:
-                      01168 ;1ière portée
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 26
+0304   3464 340A      01112     dt .100,.10  ; si bémol
+0306   3464 340C      01113     dt .100,.12  ; do
+0308   3464 340C      01114     dt .100,.12  ; do
+030A   3464 340C      01115     dt .100,.12  ; do
+030C   3464 340A      01116     dt .100,.10  ; si bémol
+030E   3464 3409      01117     dt .100,.9   ; la 
+0310   3464 3407      01118     dt .100,.7   ; sol
+0312   3464 3405      01119     dt .100,.5   ; fa
+0314   3464 3405      01120     dt .100,.5   ; fa
+0316   3464 3407      01121     dt .100,.7   ; sol
+0318   3496 3407      01122     dt .150,.7   ; sol
+031A   3432 3405      01123     dt .50,.5   ; fa
+031C   34C8 3405      01124     dt .200,.5   ; fa
+                      01125  
+                      01126 ; mélodia (thème du film les jeux interdis)
+031E                  01127 melodia:
+031E   342B           01128     dt .43
+                      01129 ;1ière portée
+031F   3464 3409      01130     dt .100, .9 ; la
+0321   3464 3409      01131     dt .100, .9 ; la
+0323   3464 3409      01132     dt .100, .9 ; la
+0325   3464 3409      01133     dt .100, .9 ; la
+0327   3464 3407      01134     dt .100, .7 ; sol
+0329   3464 3405      01135     dt .100, .5 ; fa
+032B   3464 3405      01136     dt .100, .5 ; fa
+032D   3464 3404      01137     dt .100, .4 ; mi
+032F   3464 3402      01138     dt .100, .2 ; ré
+0331   3464 3402      01139     dt .100, .2 ; ré
+0333   3464 3405      01140     dt .100, .5 ; fa
+0335   3464 3409      01141     dt .100, .9 ; la
+                      01142 ;2ième portée
+0337   3464 340E      01143     dt .100, .14 ; ré
+0339   3464 340E      01144     dt .100, .14 ; ré
+033B   3464 340E      01145     dt .100, .14 ; ré
+033D   3464 340E      01146     dt .100, .14 ; ré
+033F   3464 340C      01147     dt .100, .12 ; do
+0341   3464 340A      01148     dt .100, .10 ; si bémol
+0343   3464 340A      01149     dt .100, .10 ; si bémol
+0345   3464 3409      01150     dt .100, .9 ; la
+0347   3464 3407      01151     dt .100, .7 ; sol
+0349   3464 3407      01152     dt .100, .7 ; sol
+034B   3464 3409      01153     dt .100, .9 ; la
+034D   3464 340A      01154     dt .100, .10 ; si bémol
+                      01155 ;3ième portée
+034F   3464 3409      01156     dt .100, .9 ; la
+0351   3464 340A      01157     dt .100, .10 ; si bémol
+0353   3464 3409      01158     dt .100, .9 ; la
+0355   3464 340D      01159     dt .100, .13 ; do#
+0357   3464 340A      01160     dt .100, .10 ; si bémol
+0359   3464 3409      01161     dt .100, .9 ; la
+035B   3464 3409      01162     dt .100, .9 ; la
+035D   3464 3407      01163     dt .100, .7 ; sol
+035F   3464 3405      01164     dt .100, .5 ; fa
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 26
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-0369   3429           01169     dt .41
-036A   34C8 3407      01170     dt .200, .7  ; sol
-036C   3464 3407      01171     dt .100, .7  ; sol
-036E   3464 340B      01172     dt .100, .11 ; si
-0370   3464 340B      01173     dt .100, .11 ; si
-0372   3464 3409      01174     dt .100, .9  ; la
-0374   3464 340B      01175     dt .100, .11 ; si
-0376   3464 3407      01176     dt .100, .7  ; sol
-0378   34C8 3407      01177     dt .200, .7  ; sol
-037A   3464 3407      01178     dt .100, .7  ; sol
-037C   3464 340B      01179     dt .100, .11 ; si
-037E   3464 340B      01180     dt .100, .11 ; si
-0380   3464 3409      01181     dt .100, .9  ; la
-0382   34C8 340B      01182     dt .200, .11 ; si
-                      01183 ;2ième portée
-0384   34C8 340B      01184     dt .200, .11 ; si
-0386   3464 340B      01185     dt .100, .11 ; si
-0388   3464 3409      01186     dt .100, .9  ; la
-038A   3464 3407      01187     dt .100, .7  ; sol
-038C   3464 340B      01188     dt .100, .11 ; si
-038E   3464 340E      01189     dt .100, .14 ; ré
-0390   3464 340B      01190     dt .100, .11 ; si
-0392   34C8 340E      01191     dt .200, .14 ; ré
-0394   3464 340E      01192     dt .100, .14 ; ré
-0396   3464 340B      01193     dt .100, .11 ; si
-0398   3464 3407      01194     dt .100, .7  ; sol
-039A   3464 340B      01195     dt .100, .11 ; si
-039C   34C8 3409      01196     dt .200, .9  ; la
-                      01197 ;3ième portée
-039E   34C8 3407      01198     dt .200, .7  ; sol
-03A0   3464 3407      01199     dt .100, .7  ; sol
-03A2   3464 340B      01200     dt .100, .11 ; si
-03A4   3464 340B      01201     dt .100, .11 ; si
-03A6   3432 3409      01202     dt .50, .9   ; la
-03A8   3432 3407      01203     dt .50, .7   ; sol
-03AA   3464 340B      01204     dt .100, .11 ; si
-03AC   3464 3407      01205     dt .100, .7  ; sol
-03AE   34C8 340B      01206     dt .200, .11 ; si
-03B0   3464 340B      01207     dt .100, .11 ; si
-03B2   3432 3409      01208     dt .50, .9  ; la
-03B4   3432 3407      01209     dt .50, .7  ; sol
-03B6   3464 340B      01210     dt .100, .11 ; si
-03B8   3464 3409      01211     dt .100, .9  ; la
-03BA   34C8 3407      01212     dt .200, .7  ; sol
-                      01213     
-                      01214 ;frère Jacques
-03BC                  01215 frere_jacques:    
-03BC   3420           01216     dt .32
-                      01217 ;1ière portée
-03BD   3464 3405      01218     dt .100, .5 ; fa
-03BF   3464 3407      01219     dt .100, .7  ; sol
-03C1   3464 3409      01220     dt .100, .9   ; la
-03C3   3464 3405      01221     dt .100, .5 ; fa
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 27
+                      01165 ;4ième portée
+0361   3464 3405      01166     dt .100, .5 ; fa
+0363   3464 3404      01167     dt .100, .4 ; mi
+0365   3464 3402      01168     dt .100, .2 ; ré
+0367   3464 3404      01169     dt .100, .4 ; mi
+0369   3464 3404      01170     dt .100, .4 ; mi
+036B   3464 3404      01171     dt .100, .4 ; mi
+036D   3464 3404      01172     dt .100, .4 ; mi
+036F   3464 3405      01173     dt .100, .5 ; fa
+0371   3464 3404      01174     dt .100, .4 ; mi
+0373   34FF 3402      01175     dt .255, .2 ; ré
+                      01176 
+                      01177 ; à la claire fontaine    
+0375                  01178 claire_fontaine:
+                      01179 ;1ière portée
+0375   3429           01180     dt .41
+0376   34C8 3407      01181     dt .200, .7  ; sol
+0378   3464 3407      01182     dt .100, .7  ; sol
+037A   3464 340B      01183     dt .100, .11 ; si
+037C   3464 340B      01184     dt .100, .11 ; si
+037E   3464 3409      01185     dt .100, .9  ; la
+0380   3464 340B      01186     dt .100, .11 ; si
+0382   3464 3407      01187     dt .100, .7  ; sol
+0384   34C8 3407      01188     dt .200, .7  ; sol
+0386   3464 3407      01189     dt .100, .7  ; sol
+0388   3464 340B      01190     dt .100, .11 ; si
+038A   3464 340B      01191     dt .100, .11 ; si
+038C   3464 3409      01192     dt .100, .9  ; la
+038E   34C8 340B      01193     dt .200, .11 ; si
+                      01194 ;2ième portée
+0390   34C8 340B      01195     dt .200, .11 ; si
+0392   3464 340B      01196     dt .100, .11 ; si
+0394   3464 3409      01197     dt .100, .9  ; la
+0396   3464 3407      01198     dt .100, .7  ; sol
+0398   3464 340B      01199     dt .100, .11 ; si
+039A   3464 340E      01200     dt .100, .14 ; ré
+039C   3464 340B      01201     dt .100, .11 ; si
+039E   34C8 340E      01202     dt .200, .14 ; ré
+03A0   3464 340E      01203     dt .100, .14 ; ré
+03A2   3464 340B      01204     dt .100, .11 ; si
+03A4   3464 3407      01205     dt .100, .7  ; sol
+03A6   3464 340B      01206     dt .100, .11 ; si
+03A8   34C8 3409      01207     dt .200, .9  ; la
+                      01208 ;3ième portée
+03AA   34C8 3407      01209     dt .200, .7  ; sol
+03AC   3464 3407      01210     dt .100, .7  ; sol
+03AE   3464 340B      01211     dt .100, .11 ; si
+03B0   3464 340B      01212     dt .100, .11 ; si
+03B2   3432 3409      01213     dt .50, .9   ; la
+03B4   3432 3407      01214     dt .50, .7   ; sol
+03B6   3464 340B      01215     dt .100, .11 ; si
+03B8   3464 3407      01216     dt .100, .7  ; sol
+03BA   34C8 340B      01217     dt .200, .11 ; si
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 27
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-                      01222     
-03C5   3464 3405      01223     dt .100, .5 ; fa
-03C7   3464 3407      01224     dt .100, .7  ; sol
-03C9   3464 3409      01225     dt .100, .9   ; la
-03CB   3464 3405      01226     dt .100, .5 ; fa
-                      01227  
-03CD   3464 3409      01228     dt .100, .9   ; la
-03CF   3464 340A      01229     dt .100, .10 ; si bémol
-03D1   34C8 340C      01230     dt .200, .12 ; do
-                      01231     
-03D3   3464 3409      01232     dt .100, .9   ; la
-03D5   3464 340A      01233     dt .100, .10 ; si bémol
-03D7   34C8 340C      01234     dt .200, .12 ; do
-                      01235 ;2ième portée    
-03D9   344B 340C      01236     dt .75,  .12 ; do
-03DB   3419 340E      01237     dt .25,  .14 ; ré
-03DD   3432 340C      01238     dt .50,  .12 ; do
-03DF   3432 340A      01239     dt .50,  .10 ; si bémol
-03E1   3464 3409      01240     dt .100, .9  ; la
-03E3   3464 3405      01241     dt .100, .5  ; fa
-                      01242 
-03E5   344B 340C      01243     dt .75,  .12 ; do
-03E7   3419 340E      01244     dt .25,  .14 ; ré
-03E9   3432 340C      01245     dt .50,  .12 ; do
-03EB   3432 340A      01246     dt .50,  .10 ; si bémol
-03ED   3464 3409      01247     dt .100, .9  ; la
-03EF   3464 3405      01248     dt .100, .5  ; fa
-                      01249 
-03F1   3464 3405      01250     dt .100, .5  ; fa
-03F3   3464 340C      01251     dt .100, .12 ; do
-03F5   34C8 3405      01252     dt .200, .5  ; fa
+03BC   3464 340B      01218     dt .100, .11 ; si
+03BE   3432 3409      01219     dt .50, .9  ; la
+03C0   3432 3407      01220     dt .50, .7  ; sol
+03C2   3464 340B      01221     dt .100, .11 ; si
+03C4   3464 3409      01222     dt .100, .9  ; la
+03C6   34C8 3407      01223     dt .200, .7  ; sol
+                      01224     
+                      01225 ;frère Jacques
+03C8                  01226 frere_jacques:    
+03C8   3420           01227     dt .32
+                      01228 ;1ière portée
+03C9   3464 3405      01229     dt .100, .5 ; fa
+03CB   3464 3407      01230     dt .100, .7  ; sol
+03CD   3464 3409      01231     dt .100, .9   ; la
+03CF   3464 3405      01232     dt .100, .5 ; fa
+                      01233     
+03D1   3464 3405      01234     dt .100, .5 ; fa
+03D3   3464 3407      01235     dt .100, .7  ; sol
+03D5   3464 3409      01236     dt .100, .9   ; la
+03D7   3464 3405      01237     dt .100, .5 ; fa
+                      01238  
+03D9   3464 3409      01239     dt .100, .9   ; la
+03DB   3464 340A      01240     dt .100, .10 ; si bémol
+03DD   34C8 340C      01241     dt .200, .12 ; do
+                      01242     
+03DF   3464 3409      01243     dt .100, .9   ; la
+03E1   3464 340A      01244     dt .100, .10 ; si bémol
+03E3   34C8 340C      01245     dt .200, .12 ; do
+                      01246 ;2ième portée    
+03E5   344B 340C      01247     dt .75,  .12 ; do
+03E7   3419 340E      01248     dt .25,  .14 ; ré
+03E9   3432 340C      01249     dt .50,  .12 ; do
+03EB   3432 340A      01250     dt .50,  .10 ; si bémol
+03ED   3464 3409      01251     dt .100, .9  ; la
+03EF   3464 3405      01252     dt .100, .5  ; fa
                       01253 
-03F7   3464 3405      01254     dt .100, .5   ; fa
-03F9   3464 340C      01255     dt .100,  .12 ; do
-03FB   34C8 3405      01256     dt .200, .5   ; fa
-                      01257 
-                      01258 ;J'ai du bon tabac dans ma tabatière
-03FD                  01259 bon_tabac:
-03FD   341E           01260     dt .30
-                      01261 ;1ière portée
-03FE   3464 3407      01262     dt .100, .7  ; sol
-0400   3464 3409      01263     dt .100, .9   ; la
-0402   3464 340B      01264     dt .100, .11 ; si
-0404   3464 3407      01265     dt .100, .7  ; sol
-                      01266     
-0406   34C8 3409      01267     dt .200, .9   ; la
-0408   3464 3409      01268     dt .100, .9   ; la
-040A   3464 340B      01269     dt .100, .11 ; si
-                      01270     
-040C   34C8 340C      01271     dt .200,  .12 ; do
-040E   34C8 340C      01272     dt .200,  .12 ; do
-                      01273     
-0410   34C8 340B      01274     dt .200, .11 ; si
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 28
+03F1   344B 340C      01254     dt .75,  .12 ; do
+03F3   3419 340E      01255     dt .25,  .14 ; ré
+03F5   3432 340C      01256     dt .50,  .12 ; do
+03F7   3432 340A      01257     dt .50,  .10 ; si bémol
+03F9   3464 3409      01258     dt .100, .9  ; la
+03FB   3464 3405      01259     dt .100, .5  ; fa
+                      01260 
+03FD   3464 3405      01261     dt .100, .5  ; fa
+03FF   3464 340C      01262     dt .100, .12 ; do
+0401   34C8 3405      01263     dt .200, .5  ; fa
+                      01264 
+0403   3464 3405      01265     dt .100, .5   ; fa
+0405   3464 340C      01266     dt .100,  .12 ; do
+0407   34C8 3405      01267     dt .200, .5   ; fa
+                      01268 
+                      01269 ;J'ai du bon tabac dans ma tabatière
+0409                  01270 bon_tabac:
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 28
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-0412   34C8 340B      01275     dt .200, .11 ; si
-                      01276 ;2ième portée
-0414   3464 3407      01277     dt .100, .7  ; sol
-0416   3464 3409      01278     dt .100, .9   ; la
-0418   3464 340B      01279     dt .100, .11 ; si
-041A   3464 3407      01280     dt .100, .7  ; sol
+0409   341E           01271     dt .30
+                      01272 ;1ière portée
+040A   3464 3407      01273     dt .100, .7  ; sol
+040C   3464 3409      01274     dt .100, .9   ; la
+040E   3464 340B      01275     dt .100, .11 ; si
+0410   3464 3407      01276     dt .100, .7  ; sol
+                      01277     
+0412   34C8 3409      01278     dt .200, .9   ; la
+0414   3464 3409      01279     dt .100, .9   ; la
+0416   3464 340B      01280     dt .100, .11 ; si
                       01281     
-041C   34C8 3409      01282     dt .200, .9   ; la
-041E   3464 3409      01283     dt .100, .9   ; la
-0420   3464 340B      01284     dt .100, .11 ; si
-                      01285     
-0422   34C8 340C      01286     dt .200,  .12 ; do
-0424   34C8 340E      01287     dt .200,  .14 ; ré
-                      01288     
-0426   34FF 3407      01289     dt .255,  .7  ; sol
-                      01290 ;3ième portée
-0428   34C8 340E      01291     dt .200,  .14 ; ré
-042A   3464 340E      01292     dt .100,  .14 ; ré
-042C   3464 340C      01293     dt .100,  .12 ; do
-                      01294        
-042E   34C8 340B      01295     dt .200, .11 ; si
-0430   3464 3409      01296     dt .100, .9   ; la
-0432   3464 340B      01297     dt .100, .11 ; si
-                      01298  
-0434   34C8 340C      01299     dt .200,  .12 ; do
-0436   34C8 340E      01300     dt .200,  .14 ; ré
-                      01301     
-0438   34FF 3409      01302     dt .255,  .9  ; la    
-                      01303 
-                      01304 ; god save de queen    
-043A                  01305 gstq:    
-043A   3429           01306     dt .41
-                      01307 ;1ère portée    
-043B   3464 340C      01308     dt .100, .12 ; do
-043D   3464 340C      01309     dt .100, .12 ; do
-043F   3464 340E      01310     dt .100, .14 ; ré
-                      01311     
-0441   3496 340B      01312     dt .150, .11 ; si
-0443   3432 340C      01313     dt .50,  .12 ; do
-0445   3464 340E      01314     dt .100, .14 ; ré
-                      01315     
-0447   3464 3410      01316     dt .100, .16 ; mi
-0449   3464 3410      01317     dt .100, .16 ; mi
-044B   3464 3411      01318     dt .100, .17 ; fa
-                      01319     
-044D   3496 3410      01320     dt .150, .16 ; mi
-044F   3432 340E      01321     dt .50,  .14 ; ré
-0451   3464 340C      01322     dt .100, .12 ; do
-                      01323 
-                      01324 ;2ième portée
-0453   3464 340E      01325     dt .100, .14 ; ré
-0455   3464 340C      01326     dt .100, .12 ; do
-0457   3464 340B      01327     dt .100, .11 ; si
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 29
+0418   34C8 340C      01282     dt .200,  .12 ; do
+041A   34C8 340C      01283     dt .200,  .12 ; do
+                      01284     
+041C   34C8 340B      01285     dt .200, .11 ; si
+041E   34C8 340B      01286     dt .200, .11 ; si
+                      01287 ;2ième portée
+0420   3464 3407      01288     dt .100, .7  ; sol
+0422   3464 3409      01289     dt .100, .9   ; la
+0424   3464 340B      01290     dt .100, .11 ; si
+0426   3464 3407      01291     dt .100, .7  ; sol
+                      01292     
+0428   34C8 3409      01293     dt .200, .9   ; la
+042A   3464 3409      01294     dt .100, .9   ; la
+042C   3464 340B      01295     dt .100, .11 ; si
+                      01296     
+042E   34C8 340C      01297     dt .200,  .12 ; do
+0430   34C8 340E      01298     dt .200,  .14 ; ré
+                      01299     
+0432   34FF 3407      01300     dt .255,  .7  ; sol
+                      01301 ;3ième portée
+0434   34C8 340E      01302     dt .200,  .14 ; ré
+0436   3464 340E      01303     dt .100,  .14 ; ré
+0438   3464 340C      01304     dt .100,  .12 ; do
+                      01305        
+043A   34C8 340B      01306     dt .200, .11 ; si
+043C   3464 3409      01307     dt .100, .9   ; la
+043E   3464 340B      01308     dt .100, .11 ; si
+                      01309  
+0440   34C8 340C      01310     dt .200,  .12 ; do
+0442   34C8 340E      01311     dt .200,  .14 ; ré
+                      01312     
+0444   34FF 3409      01313     dt .255,  .9  ; la    
+                      01314 
+                      01315 ; god save de queen    
+0446                  01316 gstq:    
+0446   3429           01317     dt .41
+                      01318 ;1ère portée    
+0447   3464 340C      01319     dt .100, .12 ; do
+0449   3464 340C      01320     dt .100, .12 ; do
+044B   3464 340E      01321     dt .100, .14 ; ré
+                      01322     
+044D   3496 340B      01323     dt .150, .11 ; si
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 29
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-                      01328     
-0459   34FF 340C      01329     dt .255, .12 ; do
+044F   3432 340C      01324     dt .50,  .12 ; do
+0451   3464 340E      01325     dt .100, .14 ; ré
+                      01326     
+0453   3464 3410      01327     dt .100, .16 ; mi
+0455   3464 3410      01328     dt .100, .16 ; mi
+0457   3464 3411      01329     dt .100, .17 ; fa
                       01330     
-045B   3464 3413      01331     dt .100, .19 ; sol
-045D   3464 3413      01332     dt .100, .19 ; sol
-045F   3464 3413      01333     dt .100, .19 ; sol
+0459   3496 3410      01331     dt .150, .16 ; mi
+045B   3432 340E      01332     dt .50,  .14 ; ré
+045D   3464 340C      01333     dt .100, .12 ; do
                       01334 
-0461   3496 3413      01335     dt .150, .19 ; sol
-0463   3432 3411      01336     dt .50,  .17 ; fa
-0465   3464 3410      01337     dt .100, .16 ; mi
-                      01338     
-                      01339 ;3ième portée
-0467   3464 3411      01340     dt .100, .17 ; fa
-0469   3464 3411      01341     dt .100, .17 ; fa
-046B   3464 3411      01342     dt .100, .17 ; fa
-                      01343 
-046D   3496 3411      01344     dt .150, .17 ; fa
-046F   3432 3410      01345     dt .50,  .16 ; mi
-0471   3464 340E      01346     dt .100, .14 ; ré
-                      01347     
-0473   3464 3410      01348     dt .100, .16 ; mi
-0475   3432 3411      01349     dt .50,  .17 ; fa
-0477   3432 3410      01350     dt .50,  .16 ; mi
-0479   3432 340E      01351     dt .50,  .14 ; ré
-047B   3432 340C      01352     dt .50,  .12 ; do
-                      01353     
-047D   3496 3410      01354     dt .150, .16 ; mi
-047F   3432 3411      01355     dt .50,  .17 ; fa
-0481   3464 3413      01356     dt .100, .19 ; sol
-                      01357     
-                      01358 ;4ième portée
-0483   3432 3415      01359     dt .50,  .21 ; la
-0485   3432 3411      01360     dt .50,  .17 ; fa
-0487   3464 3410      01361     dt .100, .16 ; mi
-0489   3464 340E      01362     dt .100, .14 ; ré
-                      01363     
-048B   34FF 340C      01364     dt .255, .12 ; do
-                      01365 
-                      01366 ;greensleeves
-048D                  01367 greensleeves:
-048D   3448           01368     dt .72
-                      01369 ;1ière portée
-                      01370 ;    dt .100, .25  ; silence
-                      01371 ;    dt .100, .25  ; silence
-048E   3464 340E      01372     dt .100, .14  ; ré
-                      01373     
-0490   34C8 3411      01374     dt .200, .17  ; fa
-0492   3464 3413      01375     dt .100, .19  ; sol
-                      01376     
-0494   3496 3415      01377     dt .150, .21  ; la
-0496   3432 3414      01378     dt .50,  .20  ; si bémol
-0498   3464 3415      01379     dt .100, .21  ; la
-                      01380     
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 30
+                      01335 ;2ième portée
+045F   3464 340E      01336     dt .100, .14 ; ré
+0461   3464 340C      01337     dt .100, .12 ; do
+0463   3464 340B      01338     dt .100, .11 ; si
+                      01339     
+0465   34FF 340C      01340     dt .255, .12 ; do
+                      01341     
+0467   3464 3413      01342     dt .100, .19 ; sol
+0469   3464 3413      01343     dt .100, .19 ; sol
+046B   3464 3413      01344     dt .100, .19 ; sol
+                      01345 
+046D   3496 3413      01346     dt .150, .19 ; sol
+046F   3432 3411      01347     dt .50,  .17 ; fa
+0471   3464 3410      01348     dt .100, .16 ; mi
+                      01349     
+                      01350 ;3ième portée
+0473   3464 3411      01351     dt .100, .17 ; fa
+0475   3464 3411      01352     dt .100, .17 ; fa
+0477   3464 3411      01353     dt .100, .17 ; fa
+                      01354 
+0479   3496 3411      01355     dt .150, .17 ; fa
+047B   3432 3410      01356     dt .50,  .16 ; mi
+047D   3464 340E      01357     dt .100, .14 ; ré
+                      01358     
+047F   3464 3410      01359     dt .100, .16 ; mi
+0481   3432 3411      01360     dt .50,  .17 ; fa
+0483   3432 3410      01361     dt .50,  .16 ; mi
+0485   3432 340E      01362     dt .50,  .14 ; ré
+0487   3432 340C      01363     dt .50,  .12 ; do
+                      01364     
+0489   3496 3410      01365     dt .150, .16 ; mi
+048B   3432 3411      01366     dt .50,  .17 ; fa
+048D   3464 3413      01367     dt .100, .19 ; sol
+                      01368     
+                      01369 ;4ième portée
+048F   3432 3415      01370     dt .50,  .21 ; la
+0491   3432 3411      01371     dt .50,  .17 ; fa
+0493   3464 3410      01372     dt .100, .16 ; mi
+0495   3464 340E      01373     dt .100, .14 ; ré
+                      01374     
+0497   34FF 340C      01375     dt .255, .12 ; do
+                      01376 
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 30
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-049A   34C8 3413      01381     dt .200, .19  ; sol
-049C   3464 3410      01382     dt .100, .16  ; mi
-                      01383     
-049E   3496 340C      01384     dt .150, .12  ; do
-04A0   3432 340E      01385     dt .50,  .14  ; ré
-04A2   3464 3410      01386     dt .100, .16  ; mi
+                      01377 ;greensleeves
+0499                  01378 greensleeves:
+0499   3448           01379     dt .72
+                      01380 ;1ière portée
+                      01381 ;    dt .100, .25  ; silence
+                      01382 ;    dt .100, .25  ; silence
+049A   3464 340E      01383     dt .100, .14  ; ré
+                      01384     
+049C   34C8 3411      01385     dt .200, .17  ; fa
+049E   3464 3413      01386     dt .100, .19  ; sol
                       01387     
-04A4   34C8 3411      01388     dt .200, .17  ; fa
-04A6   3464 340E      01389     dt .100, .14  ; ré
-                      01390 ;2ième portée
-04A8   3496 340E      01391     dt .150, .14  ; ré
-04AA   3432 340D      01392     dt .50,  .13  ; do#
-04AC   3464 340E      01393     dt .100, .14  ; ré
+04A0   3496 3415      01388     dt .150, .21  ; la
+04A2   3432 3414      01389     dt .50,  .20  ; si bémol
+04A4   3464 3415      01390     dt .100, .21  ; la
+                      01391     
+04A6   34C8 3413      01392     dt .200, .19  ; sol
+04A8   3464 3410      01393     dt .100, .16  ; mi
                       01394     
-04AE   34C8 3410      01395     dt .200, .16  ; mi
-04B0   3464 340D      01396     dt .100, .13  ; do#
-                      01397     
-04B2   34C8 3409      01398     dt .200, .9   ; la
-04B4   3464 340E      01399     dt .100, .14  ; ré
-                      01400     
-04B6   34C8 3411      01401     dt .200, .17  ; fa
-04B8   3464 3413      01402     dt .100, .19  ; sol
-                      01403     
-04BA   3496 3415      01404     dt .150, .21  ; la
-04BC   3432 3414      01405     dt .50,  .20  ; si bémol
-04BE   3464 3415      01406     dt .100, .21  ; la
-                      01407     
-04C0   34C8 3413      01408     dt .200, .19  ; sol
-04C2   3464 3410      01409     dt .100, .16  ; mi
-                      01410 ;3ième portée
-04C4   3496 340C      01411     dt .150, .12  ; do
-04C6   3432 340E      01412     dt .50,  .14  ; ré
-04C8   3464 3410      01413     dt .100, .16  ; mi
+04AA   3496 340C      01395     dt .150, .12  ; do
+04AC   3432 340E      01396     dt .50,  .14  ; ré
+04AE   3464 3410      01397     dt .100, .16  ; mi
+                      01398     
+04B0   34C8 3411      01399     dt .200, .17  ; fa
+04B2   3464 340E      01400     dt .100, .14  ; ré
+                      01401 ;2ième portée
+04B4   3496 340E      01402     dt .150, .14  ; ré
+04B6   3432 340D      01403     dt .50,  .13  ; do#
+04B8   3464 340E      01404     dt .100, .14  ; ré
+                      01405     
+04BA   34C8 3410      01406     dt .200, .16  ; mi
+04BC   3464 340D      01407     dt .100, .13  ; do#
+                      01408     
+04BE   34C8 3409      01409     dt .200, .9   ; la
+04C0   3464 340E      01410     dt .100, .14  ; ré
+                      01411     
+04C2   34C8 3411      01412     dt .200, .17  ; fa
+04C4   3464 3413      01413     dt .100, .19  ; sol
                       01414     
-04CA   3496 3411      01415     dt .150, .17  ; fa
-04CC   3432 3410      01416     dt .50,  .16  ; mi
-04CE   3464 340E      01417     dt .100, .14  ; ré
+04C6   3496 3415      01415     dt .150, .21  ; la
+04C8   3432 3414      01416     dt .50,  .20  ; si bémol
+04CA   3464 3415      01417     dt .100, .21  ; la
                       01418     
-04D0   3496 340D      01419     dt .150, .13  ; do#
-04D2   3432 340B      01420     dt .50,  .11  ; si
-04D4   3464 340D      01421     dt .100, .13  ; do#
-                      01422     
-04D6   34C8 340E      01423     dt .200, .14  ; ré
-04D8   3464 340E      01424     dt .100, .14  ; ré
+04CC   34C8 3413      01419     dt .200, .19  ; sol
+04CE   3464 3410      01420     dt .100, .16  ; mi
+                      01421 ;3ième portée
+04D0   3496 340C      01422     dt .150, .12  ; do
+04D2   3432 340E      01423     dt .50,  .14  ; ré
+04D4   3464 3410      01424     dt .100, .16  ; mi
                       01425     
-04DA   34FF 3418      01426     dt .255, .24  ; do  devrait-être .300, .24
-                      01427 ;    dt .45,  .25  ; problème
-                      01428     
-04DC   3496 3418      01429     dt .150, .24  ; do
-04DE   3432 3417      01430     dt .50,  .23  ; si
-04E0   3464 3415      01431     dt .100, .21  ; la
-                      01432     
-04E2   34C8 3413      01433     dt .200, .19  ; sol
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 31
+04D6   3496 3411      01426     dt .150, .17  ; fa
+04D8   3432 3410      01427     dt .50,  .16  ; mi
+04DA   3464 340E      01428     dt .100, .14  ; ré
+                      01429     
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 31
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-04E4   3464 3410      01434     dt .100, .16  ; mi
-                      01435 ;4ième portée
-04E6   3496 340C      01436     dt .150, .12  ; do
-04E8   3432 340E      01437     dt .50,  .14  ; ré
-04EA   3464 3410      01438     dt .100, .16  ; mi
+04DC   3496 340D      01430     dt .150, .13  ; do#
+04DE   3432 340B      01431     dt .50,  .11  ; si
+04E0   3464 340D      01432     dt .100, .13  ; do#
+                      01433     
+04E2   34C8 340E      01434     dt .200, .14  ; ré
+04E4   3464 340E      01435     dt .100, .14  ; ré
+                      01436     
+04E6   34FF 3418      01437     dt .255, .24  ; do  devrait-être .300, .24
+                      01438 ;    dt .45,  .25  ; problème
                       01439     
-04EC   34C8 3411      01440     dt .200, .17  ; fa
-04EE   3464 340E      01441     dt .100, .14  ; ré
-                      01442     
-04F0   3496 340E      01443     dt .150, .14  ; ré
-04F2   3432 340D      01444     dt .50,  .13  ; do#
-04F4   3464 340E      01445     dt .100, .14  ; ré
-                      01446     
-04F6   34C8 3410      01447     dt .200, .16  ; mi
-04F8   3464 340D      01448     dt .100, .13  ; do#
-                      01449     
-04FA   34FF 3409      01450     dt .255, .9   ; la
-                      01451  ;   dt .45,  .25  ; silence
-                      01452     
-04FC   34FF 3418      01453     dt .255, .24  ; do
-                      01454 ;    dt .45,  .25  ; silence
-                      01455     
-04FE   3496 3418      01456     dt .150, .24  ; do
-0500   3432 3417      01457     dt .50,  .23  ; si
-0502   3464 3415      01458     dt .100, .21  ; la
-                      01459     
-0504   34C8 3413      01460     dt .200, .19  ; sol
-0506   3464 3410      01461     dt .100, .16  ; mi
-                      01462     
-0508   3496 340C      01463     dt .150, .12  ; do
-050A   3432 340E      01464     dt .50,  .14  ; ré
-050C   3464 3410      01465     dt .100, .16  ; mi
+04E8   3496 3418      01440     dt .150, .24  ; do
+04EA   3432 3417      01441     dt .50,  .23  ; si
+04EC   3464 3415      01442     dt .100, .21  ; la
+                      01443     
+04EE   34C8 3413      01444     dt .200, .19  ; sol
+04F0   3464 3410      01445     dt .100, .16  ; mi
+                      01446 ;4ième portée
+04F2   3496 340C      01447     dt .150, .12  ; do
+04F4   3432 340E      01448     dt .50,  .14  ; ré
+04F6   3464 3410      01449     dt .100, .16  ; mi
+                      01450     
+04F8   34C8 3411      01451     dt .200, .17  ; fa
+04FA   3464 340E      01452     dt .100, .14  ; ré
+                      01453     
+04FC   3496 340E      01454     dt .150, .14  ; ré
+04FE   3432 340D      01455     dt .50,  .13  ; do#
+0500   3464 340E      01456     dt .100, .14  ; ré
+                      01457     
+0502   34C8 3410      01458     dt .200, .16  ; mi
+0504   3464 340D      01459     dt .100, .13  ; do#
+                      01460     
+0506   34FF 3409      01461     dt .255, .9   ; la
+                      01462  ;   dt .45,  .25  ; silence
+                      01463     
+0508   34FF 3418      01464     dt .255, .24  ; do
+                      01465 ;    dt .45,  .25  ; silence
                       01466     
-050E   3496 3411      01467     dt .150, .17  ; fa
-0510   3432 3410      01468     dt .50,  .16  ; mi
-0512   3464 340E      01469     dt .100, .14  ; ré
+050A   3496 3418      01467     dt .150, .24  ; do
+050C   3432 3417      01468     dt .50,  .23  ; si
+050E   3464 3415      01469     dt .100, .21  ; la
                       01470     
-0514   3496 340D      01471     dt .150, .13  ; do#
-0516   3432 340B      01472     dt .50,  .11  ; si
-0518   3464 340D      01473     dt .100, .13  ; do#
-                      01474     
-051A   34FF 340E      01475     dt .255, .14  ; ré
-                      01476 ;    dt .45,  .25  ; silence
+0510   34C8 3413      01471     dt .200, .19  ; sol
+0512   3464 3410      01472     dt .100, .16  ; mi
+                      01473     
+0514   3496 340C      01474     dt .150, .12  ; do
+0516   3432 340E      01475     dt .50,  .14  ; ré
+0518   3464 3410      01476     dt .100, .16  ; mi
                       01477     
-051C   34FF 340E      01478     dt .255, .14  ; ré
-                      01479     
-                      01480     
+051A   3496 3411      01478     dt .150, .17  ; fa
+051C   3432 3410      01479     dt .50,  .16  ; mi
+051E   3464 340E      01480     dt .100, .14  ; ré
                       01481     
-                      01482     
-                      01483 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;    
-39E4 1E7F             01484     end
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 32
+0520   3496 340D      01482     dt .150, .13  ; do#
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 32
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0522   3432 340B      01483     dt .50,  .11  ; si
+0524   3464 340D      01484     dt .100, .13  ; do#
+                      01485     
+0526   34FF 340E      01486     dt .255, .14  ; ré
+                      01487 ;    dt .45,  .25  ; silence
+                      01488     
+0528   34FF 340E      01489     dt .255, .14  ; ré
+                      01490     
+                      01491     
+052A                  01492 KORO: ; Korobeiniki, ref: https://commons.wikimedia.org/wiki/File:Korobeiniki_Music.png?uselang=fr
+052A   3422           01493     dt .34
+052B   3496 3404      01494     dt .150,.4 ; mi
+052D   3432 3408      01495     dt .50,.8 ; sol#
+052F   3464 340B      01496     dt .100,.11 ; si
+0531   3432 3407      01497     dt .50,.7 ; sol
+0533   3432 3404      01498     dt .50,.4 ; mi
+0535   3496 3409      01499     dt .150,.9 ; la
+0537   3432 340C      01500     dt .50,.12 ; do
+0539   3464 3410      01501     dt .100,.16 ; mi
+053B   3432 340E      01502     dt .50,.14 ; ré
+053D   3432 340C      01503     dt .50,.12 ; do
+053F   3496 340B      01504     dt .150,.11 ; si
+0541   3432 340C      01505     dt .50,.12 ; do
+0543   3464 340E      01506     dt .100,.14 ; ré
+0545   3464 3410      01507     dt .100,.16 ; mi
+0547   3464 340C      01508     dt .100,.12 ; do
+0549   3464 3409      01509     dt .100,.9 ; la
+054B   34C8 3409      01510     dt .200,.9 ; la
+054D   3496 3411      01511     dt .150,.17 ; fa
+054F   3432 3413      01512     dt .50,.19 ; sol
+0551   3464 3415      01513     dt .100,.21 ; la
+0553   3432 3413      01514     dt .50,.19 ; sol
+0555   3432 3411      01515     dt .50,.17 ; fa
+0557   3496 3410      01516     dt .150,.16 ; mi
+0559   3432 3411      01517     dt .50,.17 ; fa
+055B   3464 3410      01518     dt .100,.16 ; mi
+055D   3432 340E      01519     dt .50,.14 ; ré
+055F   3432 340C      01520     dt .50,.12 ; do
+0561   3496 340B      01521     dt .150,.11 ; si
+0563   3432 340C      01522     dt .50,.12 ; do
+0565   3464 340E      01523     dt .100,.14 ; ré
+0567   3464 3410      01524     dt .100,.16 ; mi
+0569   3464 340C      01525     dt .100,.12 ; do
+056B   3464 3409      01526     dt .100,.9 ; la
+056D   34C8 3409      01527     dt .200,.9 ; la
+                      01528     
+                      01529     
+                      01530 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;    
+39E4 1E7F             01531     end
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 33
 
 
 SYMBOL TABLE
@@ -1884,7 +1941,7 @@ ANSC1                             00000001
 ANSC2                             00000002
 ANSC3                             00000003
 ANSC4                             00000004
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 33
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 34
 
 
 SYMBOL TABLE
@@ -1943,7 +2000,7 @@ CCP1M0                            00000000
 CCP1M1                            00000001
 CCP1M2                            00000002
 CCP1M3                            00000003
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 34
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 35
 
 
 SYMBOL TABLE
@@ -2002,7 +2059,7 @@ F2MHZ                             0000000C
 F8MHZ                             0000000E
 FREE                              00000004
 FSR0                              00000004
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 35
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 36
 
 
 SYMBOL TABLE
@@ -2061,7 +2118,7 @@ IOCAF5                            00000005
 IOCAN                             00000392
 IOCAN0                            00000000
 IOCAN1                            00000001
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 36
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 37
 
 
 SYMBOL TABLE
@@ -2105,6 +2162,7 @@ IRCF0                             00000003
 IRCF1                             00000004
 IRCF2                             00000005
 IRCF3                             00000006
+KORO                              0000052A
 LATA                              0000010C
 LATA0                             00000000
 LATA1                             00000001
@@ -2118,14 +2176,14 @@ LATC2                             00000002
 LATC3                             00000003
 LATC4                             00000004
 LATC5                             00000005
-LED_CONN                          00000247
-LFIOFR                            00000001
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 37
+LED_CONN                          00000253
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 38
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+LFIOFR                            00000001
 LWLO                              00000005
 MFIOFR                            00000002
 MSK0                              00000000
@@ -2136,7 +2194,7 @@ MSK4                              00000004
 MSK5                              00000005
 MSK6                              00000006
 MSK7                              00000007
-NOMBRE_MELODIES                   00000008
+NOMBRE_MELODIES                   00000009
 NOT_BOR                           00000000
 NOT_PD                            00000003
 NOT_POR                           00000001
@@ -2178,13 +2236,13 @@ OSCTUNE                           00000098
 OSTS                              00000005
 P                                 00000004
 PCIE                              00000006
-PCL                               00000002
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 38
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 39
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+PCL                               00000002
 PCLATH                            0000000A
 PCLATH_SHAD                       00000FE7
 PCON                              00000096
@@ -2237,13 +2295,13 @@ RC3PPS                            00000EA3
 RC4                               00000004
 RC4PPS                            00000EA4
 RC5                               00000005
-RC5PPS                            00000EA5
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 39
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 40
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+RC5PPS                            00000EA5
 RCEN                              00000003
 RD                                00000000
 RESTE                             ACAL
@@ -2253,7 +2311,7 @@ Reserved                          00000000
 S                                 00000003
 SBCDE                             00000002
 SBOREN                            00000007
-SCALE                             00000267
+SCALE                             00000273
 SCIE                              00000005
 SCS0                              00000000
 SCS1                              00000001
@@ -2268,7 +2326,7 @@ SERVO_OUT_FN                      H'D'
 SERVO_PERIOD                      0000009B
 SERVO_PIN                         RA2
 SERVO_PIN_PPS                     RA2PPS
-SERVO_POS_BAS                     00000034
+SERVO_POS_BAS                     0000002F
 SERVO_POS_HAUT                    0000003C
 SERVO_TRIS                        TRISA
 SERVO_WPU                         WPUA
@@ -2296,13 +2354,13 @@ SSP1ADD3                          00000003
 SSP1ADD4                          00000004
 SSP1ADD5                          00000005
 SSP1ADD6                          00000006
-SSP1ADD7                          00000007
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 40
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 41
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+SSP1ADD7                          00000007
 SSP1BUF                           00000211
 SSP1BUF0                          00000000
 SSP1BUF1                          00000001
@@ -2355,13 +2413,13 @@ STATUS_SHAD                       00000FE4
 STKOVF                            00000007
 STKPTR                            00000FED
 STKUNF                            00000006
-SWDTEN                            00000000
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 41
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 42
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+SWDTEN                            00000000
 T0CKIPPS                          00000E11
 T0CS                              00000005
 T0IE                              00000005
@@ -2414,13 +2472,13 @@ TMR1_DLY                          00008300
 TMR2                              0000001A
 TMR2IE                            00000001
 TMR2IF                            00000001
-TMR2ON                            00000002
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 42
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 43
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+TMR2ON                            00000002
 TONE_CCPCON                       CCP1CON
 TONE_CCPRL                        CCPR1L
 TONE_LAT                          LATA
@@ -2473,13 +2531,13 @@ WPUA0                             00000000
 WPUA1                             00000001
 WPUA2                             00000002
 WPUA3                             00000003
-WPUA4                             00000004
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 43
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 44
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+WPUA4                             00000004
 WPUA5                             00000005
 WPUC                              0000020E
 WPUC0                             00000000
@@ -2532,13 +2590,13 @@ _FOSC_ECM                         00003FFE
 _FOSC_INTOSC                      00003FFC
 _IDLOC0                           00008000
 _IDLOC1                           00008001
-_IDLOC2                           00008002
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 44
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 45
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+_IDLOC2                           00008002
 _IDLOC3                           00008003
 _LPBOR_OFF                        00003FFF
 _LPBOR_ON                         000037FF
@@ -2572,11 +2630,11 @@ alarm_loop                        000000D4
 attack                            000000FF
 beep                              00000098
 boite_a_musique                   000001EC
-bon_tabac                         000003FD
+bon_tabac                         00000409
 cancellation                      000000C1
 case                              
-ce3k                              00000281
-claire_fontaine                   00000369
+ce3k                              0000028D
+claire_fontaine                   00000375
 decay                             0000010D
 delay                             0000014E
 disable_timer                     00000024
@@ -2591,41 +2649,43 @@ div15_4                           0000018E
 div15_exit                        00000193
 drop                              
 dup                               
-duree                             00000281
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 45
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 46
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+duree                             0000028D
 eveil_normal                      00000063
 flags                             00000008
-frere_jacques                     000003BC
-greensleeves                      0000048D
-gstq                              0000043A
-hymne_joie                        00000295
+frere_jacques                     000003C8
+greensleeves                      00000499
+gstq                              00000446
+hymne_joie                        000002A1
 infusion                          0000009E
 init                              00000029
 isr                               00000004
 isr_exit                          00000028
 isr_timer0                        0000001E
 isr_timer1                        0000000D
-joue                              00000231
+joue                              0000023D
 last_pos                          0000000A
 light_segment                     0000011E
 main                              00000054
-melodia                           00000312
+melodia                           0000031E
 msec4                             00000006
 musique                           0000000E
-musique_0                         0000022D
-musique_1                         00000228
-musique_2                         00000223
-musique_3                         0000021E
-musique_4                         00000219
-musique_5                         00000214
-musique_6                         0000020F
+musique_0                         00000239
+musique_1                         00000234
+musique_2                         0000022F
+musique_3                         0000022A
+musique_4                         00000225
+musique_5                         00000220
+musique_6                         0000021B
+musique_7                         00000216
+musique_8                         00000211
 no_incr                           000001BB
-notes_loop                        00000233
+notes_loop                        0000023F
 over                              
 pause_msec                        000001AE
 popw                              
@@ -2641,22 +2701,22 @@ servo_pos                         00000131
 servo_pos_exit                    0000015F
 servo_pos_loop                    00000144
 servo_test                        000001E7
-soldomi                           0000028E
+soldomi                           0000029A
 stack                             00000000
 start_msec4_tmr                   000001A5
 start_timer                       00000195
 sustain                           0000010A
 swap                              
 temp                              00000009
-test_tmr1                         00000008
-timeout                           000000C4
-timeset                           00000072
-MPASM 5.68  /HOME/JACQUES/GITHUB/MACHINEATHE   9-25-2016  22:10:01         PAGE 46
+MPASM 5.70                           MAT.ASM   11-22-2016  14:15:25         PAGE 47
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+test_tmr1                         00000008
+timeout                           000000C4
+timeset                           00000072
 timeset_exit                      0000008E
 timeset_wait_btn                  00000075
 tone                              000000E5

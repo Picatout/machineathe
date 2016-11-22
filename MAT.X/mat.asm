@@ -117,11 +117,11 @@
     constant TMR1_DLY=.65536-.32000  ; compte pour TMR1H:TMR1L
     constant SERVO_PERIOD=.155       ; compte pour PR2
     constant SERVO_NEUTRAL_PULSE=.47 ; compte pour CCP2RL:CCP2CON:DC2B
-    constant SERVO_POS_BAS=.52       ; " 
+    constant SERVO_POS_BAS=.47       ; " 
     constant SERVO_POS_HAUT=.60      ; "
     constant SERVO_DLY=.3  ; contrôle vitesse de rotation
     
-    constant NOMBRE_MELODIES=.8 ; nombre de mélodies pour la boite à musique
+    constant NOMBRE_MELODIES=.9 ; nombre de mélodies pour la boite à musique
     
 ;;;;;;;;;;;;;;    
 ; macros    
@@ -884,8 +884,11 @@ servo_test:
 ; temps est enfoncé lorsque l'utilisateur presse 
 ; le bouton start
 boite_a_musique:
-    movlw .7
-    andwf musique,W
+    movlw NOMBRE_MELODIES
+    subwf musique,W
+    skpnc
+    clrf musique
+    movfw musique
     case 0, musique_0
     case 1, musique_1
     case 2, musique_2
@@ -893,6 +896,14 @@ boite_a_musique:
     case 4, musique_4
     case 5, musique_5
     case 6, musique_6
+    case 7, musique_7
+musique_8:
+    movlw high KORO
+    movwf FSR0H
+    movlw low KORO
+    movwf FSR0L
+    bra joue
+musique_7:    
 ; rencontre du 3ième type    
     movlw high ce3k
     movwf FSR0H
@@ -1478,6 +1489,42 @@ greensleeves:
     dt .255, .14  ; ré
     
     
+KORO: ; Korobeiniki, ref: https://commons.wikimedia.org/wiki/File:Korobeiniki_Music.png?uselang=fr
+    dt .34
+    dt .150,.4 ; mi
+    dt .50,.8 ; sol#
+    dt .100,.11 ; si
+    dt .50,.7 ; sol
+    dt .50,.4 ; mi
+    dt .150,.9 ; la
+    dt .50,.12 ; do
+    dt .100,.16 ; mi
+    dt .50,.14 ; ré
+    dt .50,.12 ; do
+    dt .150,.11 ; si
+    dt .50,.12 ; do
+    dt .100,.14 ; ré
+    dt .100,.16 ; mi
+    dt .100,.12 ; do
+    dt .100,.9 ; la
+    dt .200,.9 ; la
+    dt .150,.17 ; fa
+    dt .50,.19 ; sol
+    dt .100,.21 ; la
+    dt .50,.19 ; sol
+    dt .50,.17 ; fa
+    dt .150,.16 ; mi
+    dt .50,.17 ; fa
+    dt .100,.16 ; mi
+    dt .50,.14 ; ré
+    dt .50,.12 ; do
+    dt .150,.11 ; si
+    dt .50,.12 ; do
+    dt .100,.14 ; ré
+    dt .100,.16 ; mi
+    dt .100,.12 ; do
+    dt .100,.9 ; la
+    dt .200,.9 ; la
     
     
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;    

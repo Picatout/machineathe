@@ -19,7 +19,7 @@ endif
 endif
 
 # Environment
-MKDIR=mkdir -p
+MKDIR=gnumkdir -p
 RM=rm -f 
 MV=mv 
 CP=cp 
@@ -92,7 +92,7 @@ ${OBJECTDIR}/mat.o: mat.asm  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} "${OBJECTDIR}" 
 	@${RM} ${OBJECTDIR}/mat.o.d 
 	@${RM} ${OBJECTDIR}/mat.o 
-	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/mat.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -d__DEBUG -d__MPLAB_DEBUGGER_PK3=1 -q -p$(MP_PROCESSOR_OPTION) -u  -l\\\"${OBJECTDIR}/mat.lst\\\" -e\\\"${OBJECTDIR}/mat.err\\\" $(ASM_OPTIONS)    -o\\\"${OBJECTDIR}/mat.o\\\" \\\"mat.asm\\\" 
+	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/mat.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -d__DEBUG -d__MPLAB_DEBUGGER_PK3=1 -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/mat.lst\" -e\"${OBJECTDIR}/mat.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/mat.o\" \"mat.asm\" 
 	@${DEP_GEN} -d "${OBJECTDIR}/mat.o"
 	@${FIXDEPS} "${OBJECTDIR}/mat.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
 	
@@ -101,7 +101,7 @@ ${OBJECTDIR}/mat.o: mat.asm  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} "${OBJECTDIR}" 
 	@${RM} ${OBJECTDIR}/mat.o.d 
 	@${RM} ${OBJECTDIR}/mat.o 
-	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/mat.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -q -p$(MP_PROCESSOR_OPTION) -u  -l\\\"${OBJECTDIR}/mat.lst\\\" -e\\\"${OBJECTDIR}/mat.err\\\" $(ASM_OPTIONS)    -o\\\"${OBJECTDIR}/mat.o\\\" \\\"mat.asm\\\" 
+	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/mat.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/mat.lst\" -e\"${OBJECTDIR}/mat.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/mat.o\" \"mat.asm\" 
 	@${DEP_GEN} -d "${OBJECTDIR}/mat.o"
 	@${FIXDEPS} "${OBJECTDIR}/mat.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
 	
@@ -135,7 +135,7 @@ endif
 # Enable dependency checking
 .dep.inc: .depcheck-impl
 
-DEPFILES=$(shell "${PATH_TO_IDE_BIN}"mplabwildcard ${POSSIBLE_DEPFILES})
+DEPFILES=$(shell mplabwildcard ${POSSIBLE_DEPFILES})
 ifneq (${DEPFILES},)
 include ${DEPFILES}
 endif
